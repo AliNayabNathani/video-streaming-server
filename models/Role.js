@@ -9,13 +9,6 @@ const Role = sequelize.define("Role", {
   name: {
     type: DataTypes.STRING,
   },
-  created_at: {
-    type: DataTypes.DATE,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
-  },
 });
 
 module.exports = Role;

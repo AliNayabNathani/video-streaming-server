@@ -40,7 +40,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 
 //access to json data in req.body
 app.use(express.json());
-// app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser(process.env.JWT_SECRET));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
@@ -67,7 +67,7 @@ sequelize
 const port = process.env.PORT || 5000;
 const start = async () => {
   try {
-    const pool = connectDB();
+    await connectDB();
     console.log("Connected to PostgreSQL database.");
 
     app.listen(port, () => {
