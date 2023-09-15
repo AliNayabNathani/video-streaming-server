@@ -32,11 +32,16 @@ const login = async (req, res) => {
   }
 
   const user = await User.findOne({ email });
+
   if (!user) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
 
+  // Debugging: Log the user's hashed password
+  console.log("User's hashed password:", user.password);
+
   const isPasswordCorrect = await user.comparePassword(password);
+
   if (!isPasswordCorrect) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }

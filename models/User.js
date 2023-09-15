@@ -38,13 +38,22 @@ const User = sequelize.define(
 
 User.beforeCreate(async (user, options) => {
   if (user.changed("password")) {
+    // console.log("Before hashing - user.password:", user.password);
+
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(user.password, salt);
+
+    // console.log("After hashing - user.password:", user.password);
   }
 });
 
 User.prototype.comparePassword = async function (candidatePassword) {
-  const isMatch = bcrypt.compare(candidatePassword, this.password);
+  const isMatch = candidatePassword === this.password;
+
+  console.log("Comparing passwords:");
+  console.log("candidatePassword:", candidatePassword);
+  console.log("this.password:", this.password);
+  console.log("isMatch:", isMatch);
 
   return isMatch;
 };
