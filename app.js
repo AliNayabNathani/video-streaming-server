@@ -13,13 +13,15 @@ const fileUpload = require("express-fileupload");
 // const helmet = require("helmet");
 // const xss = require("xss-clean");
 const cors = require("cors");
-
+const { auth } = require("express-openid-connect");
+const config = require("./config/auth0");
 //database
 const { connectDB, dbConfig } = require("./db/connect");
 const sequelize = require("./config/sequelize");
 
 //routers
 const authRouter = require("./routes/authRoutes");
+const adminRouter = require("./routes/adminRoutes");
 
 //import middlewares
 const notFoundMiddleware = require("./middleware/not-found");
@@ -40,17 +42,22 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 
 //access to json data in req.body
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+// app.use(cookieParser(process.env.JWT_SECRET));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
-
+app.use(auth(config));
 //routes
 // app.get("/", (req, res) => {
 //   res.send("<h1>Video Streaming</h1>");
 // });
 
+app.get("/", (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
+});
+
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/users", adminRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

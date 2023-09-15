@@ -1,12 +1,13 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const bcrypt = require("bcryptjs");
+const Role = require("./Role");
 
 const User = sequelize.define(
   "User",
   {
     id: {
-      type: DataTypes.BIGINT(20),
+      type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -23,8 +24,14 @@ const User = sequelize.define(
       allowNull: true,
     },
     role_id: {
-      type: DataTypes.BIGINT(20),
-      allowNull: true,
+      type: DataTypes.BIGINT,
+      defaultValue: 2,
+      references: {
+        model: "roles",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
     },
     status: {
       type: DataTypes.ENUM("Active", "InActive", "Deleted", "Suspended"),
@@ -35,6 +42,11 @@ const User = sequelize.define(
     tableName: "users",
   }
 );
+
+// User.belongsTo(Role, {
+//   foreignKey: "role_id",
+//   as: "role",
+// });
 
 User.beforeCreate(async (user, options) => {
   if (user.changed("password")) {
@@ -48,7 +60,7 @@ User.beforeCreate(async (user, options) => {
 });
 
 User.prototype.comparePassword = async function (candidatePassword) {
-  const isMatch = candidatePassword === this.password;
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
 
   console.log("Comparing passwords:");
   console.log("candidatePassword:", candidatePassword);
@@ -58,5 +70,24 @@ User.prototype.comparePassword = async function (candidatePassword) {
   return isMatch;
 };
 
+// async function updateUserRole() {
+//   try {
+//     const user = await User.findByPk(2);
+
+//     if (!user) {
+//       console.log("User not found.");
+//       return;
+//     }
+
+//     // Update the user's role_id
+//     user.role_id = 1;
+//     await user.save();
+
+//     console.log("User role updated successfully.");
+//   } catch (error) {
+//     console.error("Error updating user role:", error);
+//   }
+// }
+// updateUserRole();
 console.log("HERE ", User === sequelize.models.User);
 module.exports = User;
