@@ -4,7 +4,7 @@ const dbConfig = {
   user: "postgres",
   host: "localhost",
   database: "videoserver",
-  password: "admin",
+  password: "inspedium",
   port: 5432,
 };
 
