@@ -1,5 +1,10 @@
 const User = require("../models/User");
 const Role = require("../models/Role");
+const Coupon = require("../models/Coupon");
+const Category = require("../models/Category");
+const SubCategory = require("../models/SubCategory");
+const ContentCreator = require("../models/ContentCreator");
+
 const json2csv = require("json2csv");
 const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
@@ -9,6 +14,7 @@ const {
   createTokenUser,
   checkPermissions,
 } = require("../utils");
+
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -101,7 +107,7 @@ const editUserTable = async (req, res) => {
   const { user: requestUser } = req;
 
   checkPermissions(requestUser, userIdToEdit);
-
+  console.log(requestUser);
   const { name, gender, mobileNumber } = req.body;
 
   const userToEdit = await User.findByPk(userIdToEdit);
@@ -130,6 +136,7 @@ const exportCsv = async (req, res) => {
   const users = await User.findAll({
     attributes: { exclude: ["password"] },
   });
+
   if (!users) {
     throw new CustomError.NotFoundError("No users found");
   }
@@ -165,6 +172,111 @@ const addNewUser = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ msg: "User Created Successfully!" });
 };
 
+const addNewCoupon = async (req, res) => {
+  const { name, value, desc, max_value, max_redemptions } = req.body;
+
+  const existingCoupon = await Coupon.findOne({ where: { name } });
+  if (existingCoupon) {
+    throw new CustomError.BadRequestError("Coupon already exists");
+  }
+
+  const newCoupon = await Coupon.create({
+    name,
+    value,
+    desc,
+    max_value,
+    max_redemptions
+  });
+  res.status(StatusCodes.OK).json({ msg: "Coupon Successfuly Created" });
+}
+
+const getAllCoupons = async (req, res) => {
+  const coupons = await Coupon.findAll({
+    attributes: {
+      include: ['name', 'value', 'desc', 'max_value', 'max_redemptions'],
+    }
+  });
+  console.log("Coupons: ", coupons);
+
+  const couponCount = coupons.length;
+  res.status(StatusCodes.OK).json({ coupons, count: couponCount });
+}
+
+const addCategory = async (req, res) => {
+  const { name, desc } = req.body;
+  console.log(name, desc);
+
+  const existingCategory = await Category.findOne({ where: { name } });
+  if (existingCategory) {
+    throw new CustomError.BadRequestError("Category already exists");
+  }
+
+  const newCategory = await Category.create({
+    name,
+    desc
+  });
+
+  res.status(StatusCodes.OK).json({ msg: "Category Added Successfully" });
+}
+
+const addSubCategory = async (req, res) => {
+  const { name, category_id, desc } = req.body;
+
+  const categoryId = await Category.findOne({ where: { id: category_id } })
+
+  console.log("Category ID: ", categoryId);
+
+  if (!categoryId) {
+    throw new CustomError.NotFoundError(
+      "Category doesn't exist"
+    );
+  }
+  const existingSubCategory = await SubCategory.findOne({ where: { name } });
+  if (existingSubCategory) {
+    throw new CustomError.BadRequestError(
+      "Category already exist"
+    );
+  }
+  const newSubCategory = await SubCategory.create({
+    name,
+    category_id,
+    desc
+  });
+
+  res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
+}
+
+const getAllContentCreator = async (req, res) => {
+  const creators = await ContentCreator.findAll();
+  const userCount = creators.length;
+
+  res.status(StatusCodes.OK).json({ creators, count: userCount });
+};
+
+const addContentCreator = async (req, res) => {
+  const { name, email, password } = req.body;
+  const existingUser = await User.findOne({ where: { email } });
+  console.log(existingUser.id);
+
+  if (!existingUser) {
+    const newUser = User.create({
+      name,
+      email,
+      password,
+    });
+
+    const newUserId = newUser.id;
+    const newContentCreator = ContentCreator.create({
+      newUserId,
+      name
+    })
+  }
+
+  const newContentCreator = ContentCreator.create({
+    name
+  })
+}
+
 module.exports = {
   getAllUsers,
   getSingleUser,
@@ -173,4 +285,9 @@ module.exports = {
   editUserTable,
   exportCsv,
   addNewUser,
+  addNewCoupon,
+  getAllCoupons,
+  addCategory,
+  addSubCategory,
+  addContentCreator
 };

@@ -8,6 +8,10 @@ const {
   editUserTable,
   exportCsv,
   addNewUser,
+  addNewCoupon,
+  getAllCoupons,
+  addCategory,
+  addSubCategory
 } = require("../controllers/adminController");
 const { authorizePermission } = require("../middleware/authentication");
 
@@ -29,4 +33,17 @@ router.route("/:id/active").put(changeActiveStatus);
 // Edit User Information
 router.route("/:id/edit").put(editUserTable);
 
+//Add Coupon
+router.route("/add-new-coupon").post(addNewCoupon);
+
+//Get Coupon
+router.route("/get-coupons").get(getAllCoupons);
+
+//Add Category
+router.route("/add-category").post(addCategory);
+
+//Add Sub Category
+router.route("/add-sub-category").post(addSubCategory);
+
+//Add Content Creators
 module.exports = router;

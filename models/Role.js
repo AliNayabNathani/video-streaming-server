@@ -4,7 +4,7 @@ const Role = sequelize.define(
   "Role",
   {
     id: {
-      type: DataTypes.BIGINT(20),
+      type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -21,6 +21,7 @@ const Role = sequelize.define(
 //   Role.create({ name: "Admin" });
 //   Role.create({ name: "User" });
 //   Role.create({ name: "Moderator" });
+//   Role.create({ name: "Content Creator" });
 // });
 
 module.exports = Role;
