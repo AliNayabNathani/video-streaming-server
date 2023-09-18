@@ -19,14 +19,15 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    gender: {
-      type: DataTypes.ENUM("Male", "Female", "Other"),
-      allowNull: true,
-    },
-    mobile_number: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
+    // gender: {
+    //   type: DataTypes.ENUM("Male", "Female", "Other"),
+    //   defaultValue: "Male",
+    //   allowNull: true,
+    // },
+    // mobile_number: {
+    //   type: DataTypes.BIGINT,
+    //   allowNull: true,
+    // },
     password: {
       type: DataTypes.STRING,
       allowNull: true,
