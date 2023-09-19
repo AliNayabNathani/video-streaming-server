@@ -6,6 +6,7 @@ const SubCategory = require("../models/SubCategory");
 const ContentCreator = require("../models/ContentCreator");
 const ContentManagement = require("../models/ContentManagement");
 
+const Channel = require("../models/Channel");
 const json2csv = require("json2csv");
 const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
@@ -15,6 +16,7 @@ const {
   createTokenUser,
   checkPermissions,
 } = require("../utils");
+const { STATUS_CODES } = require("http");
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -46,7 +48,7 @@ const getSingleUser = async (req, res) => {
   }
 
   //Uncomment after permissions set
-  checkPermissions(req.user, user.id);
+  // checkPermissions(req.user, user.id);
 
   res.status(StatusCodes.OK).json({ user });
 };
@@ -106,7 +108,7 @@ const editUserTable = async (req, res) => {
   const { id: userIdToEdit } = req.params;
   const { user: requestUser } = req;
 
-  checkPermissions(requestUser, userIdToEdit);
+  // checkPermissions(requestUser, userIdToEdit);
   console.log(requestUser);
   const { name, gender, mobileNumber } = req.body;
 
@@ -242,26 +244,27 @@ const addSubCategory = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
 };
 
+//Doesn't work on postman but select * works on postgre
 const getAllContentCreator = async (req, res) => {
-  const creators = await ContentCreator.findAll();
-  const userCount = creators.length;
+  const creators = await ContentCreator.findAll({});
+  const creatorCount = creators.length;
 
-  res.status(StatusCodes.OK).json({ creators, count: userCount });
+  res.status(StatusCodes.OK).json({ creators, count: creatorCount });
 };
 
 const addContentCreator = async (req, res) => {
   const { name, email, password } = req.body;
   const existingUser = await User.findOne({ where: { email } });
-  console.log(existingUser.id);
 
   if (!existingUser) {
-    const newUser = User.create({
+    const newUser = await User.create({
       name,
       email,
       password,
     });
 
     const newUserId = newUser.id;
+    console.log("ID-----------------------------------:", newUserId);
     const newContentCreator = ContentCreator.create({
       newUserId,
       name,
@@ -391,6 +394,175 @@ const acceptAndAddToUserChannel = async (req, res) => {
   });
 };
 
+const getSubCategory = async (req, res) => {
+  const subCategory = await SubCategory.findAll({});
+  const subCategoryCount = subCategory.length;
+  console.log("Length: ", subCategoryCount);
+
+  res.status(StatusCodes.OK).json({ subCategory, count: subCategoryCount });
+};
+
+const editCategoryTable = async (req, res) => {
+  const { id: CategoryIdToEdit } = req.params;
+  const { Category: requestCategory } = req;
+
+  // checkPermissions(requestCategory, CategoryIdToEdit);
+
+  const { name, desc } = req.body;
+
+  const CategoryToEdit = await Category.findByPk(CategoryIdToEdit);
+
+  if (!CategoryToEdit) {
+    throw new CustomError.NotFoundError(
+      `No Category found with id ${CategoryIdToEdit}`
+    );
+  }
+
+  CategoryToEdit.name = name;
+  CategoryToEdit.desc = desc;
+
+  await CategoryToEdit.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Category information updated", Category: CategoryToEdit });
+};
+
+const deleteCategory = async (req, res) => {
+  const CategoryIdToDelete = req.params.id;
+  console.log(CategoryIdToDelete);
+
+  const CategoryToDelete = await Category.findByPk(CategoryIdToDelete);
+  if (!CategoryToDelete) {
+    throw new CustomError.NotFoundError(
+      `No Category with id ${CategoryIdToDelete}`
+    );
+  }
+
+  // Delete the Category
+  await CategoryToDelete.destroy();
+  const category = await res
+    .status(StatusCodes.OK)
+    .json({ msg: "Category Deleted Successfully!" });
+};
+
+const getSingleCategory = async (req, res) => {
+  const categoryId = req.params.id;
+  console.log(categoryId);
+  const category = await category.findByPk(categoryId, {});
+  if (!category) {
+    throw new CustomError.NotFoundError(`No category with id ${categoryId}`);
+  }
+
+  //Uncomment after permissions set
+  // checkPermissions(req.category, category.id);
+
+  res.status(StatusCodes.OK).json({ category });
+};
+
+const getSingleContentCreator = async (req, res) => {
+  const contentCreatorId = req.params.id;
+  console.log("req contentCreator", req.contentCreator);
+
+  const contentCreator = await ContentCreator.findByPk(contentCreatorId, {});
+
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError(
+      `No contentCreator with id ${contentCreatorId}`
+    );
+  }
+
+  //Uncomment after permissions set
+  // checkPermissions(req.contentCreator, contentCreator.id);
+
+  res.status(StatusCodes.OK).json({ contentCreator });
+};
+
+const deleteContentCreator = async (req, res) => {
+  const ContentCreatorIdToDelete = req.params.id;
+  console.log(ContentCreatorIdToDelete);
+
+  const ContentCreatorToDelete = await ContentCreator.findByPk(
+    ContentCreatorIdToDelete
+  );
+  if (!ContentCreatorToDelete) {
+    throw new CustomError.NotFoundError(
+      `No Content Creator with id ${ContentCreatorIdToDelete}`
+    );
+  }
+
+  // Delete the ContentCreator
+  await ContentCreatorToDelete.destroy();
+  const ContentCreator = await res
+    .status(StatusCodes.OK)
+    .json({ msg: "Content Creator Deleted Successfully!" });
+};
+
+const editContentCreatorTable = async (req, res) => {
+  const { id: ContentCreatorIdToEdit } = req.params;
+  const { ContentCreator: requestContentCreator } = req;
+
+  // checkPermissions(requestContentCreator, ContentCreatorIdToEdit);
+
+  const { name } = req.body;
+
+  const ContentCreatorToEdit = await ContentCreator.findByPk(
+    ContentCreatorIdToEdit
+  );
+
+  if (!ContentCreatorToEdit) {
+    throw new CustomError.NotFoundError(
+      `No Content Creator found with id ${ContentCreatorIdToEdit}`
+    );
+  }
+
+  ContentCreatorToEdit.name = name;
+
+  await ContentCreatorToEdit.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({
+      msg: "Content Creator information updated",
+      ContentCreator: ContentCreatorToEdit,
+    });
+};
+
+const changeContentCreatorActiveStatus = async (req, res) => {
+  const { id: contentCreatorIdToChange } = req.params;
+  const { ContentCreator: requestContentCreator } = req;
+
+  const contentCreatorToChange = await ContentCreator.findByPk(
+    contentCreatorIdToChange
+  );
+
+  if (!contentCreatorToChange) {
+    throw new CustomError.NotFoundError(
+      `No ContentCreator found with id ${contentCreatorIdToChange}`
+    );
+  }
+
+  // checkPermissions(requestContentCreator, contentCreatorToChange.id);
+
+  contentCreatorToChange.status =
+    contentCreatorToChange.status === "Active" ? "InActive" : "Active";
+  await contentCreatorToChange.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Status Changed", ContentCreator: contentCreatorToChange });
+};
+
+const changeChannelActiveStatus = async (req, res) => {
+  const { id: ChannelId } = req.params.id;
+
+  if (!ChannelId) {
+    req.status(StatusCodes.NotFoundError).json({ msg: "Channel Not Found" });
+  }
+  // checkPermissions(requestContentCreator, contentCreatorToChange.id);
+  channelToChange = await Channel.finf;
+};
+
 module.exports = {
   getAllUsers,
   getSingleUser,
@@ -408,4 +580,14 @@ module.exports = {
   updatePrivacyPolicy,
   updateAboutUs,
   getAllContent,
+  getAllContentCreator,
+  getSubCategory,
+  editCategoryTable,
+  deleteCategory,
+  getSingleCategory,
+  getSingleContentCreator,
+  deleteContentCreator,
+  editContentCreatorTable,
+  changeContentCreatorActiveStatus,
+  changeChannelActiveStatus,
 };

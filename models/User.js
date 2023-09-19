@@ -21,6 +21,7 @@ const User = sequelize.define(
     },
     // gender: {
     //   type: DataTypes.ENUM("Male", "Female", "Other"),
+    //   defaultValue: "Male",
     //   allowNull: true,
     // },
     // mobile_number: {
