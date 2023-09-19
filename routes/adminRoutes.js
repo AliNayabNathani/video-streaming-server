@@ -11,7 +11,11 @@ const {
   addNewCoupon,
   getAllCoupons,
   addCategory,
-  addSubCategory
+  addSubCategory,
+  updateTermsAndConditions,
+  updatePrivacyPolicy,
+  updateAboutUs,
+  getAllContent,
 } = require("../controllers/adminController");
 const { authorizePermission } = require("../middleware/authentication");
 
@@ -24,15 +28,6 @@ router.route("/export-users-csv").get(exportCsv);
 //Add New User
 router.route("/add-new-user").post(addNewUser);
 
-//get Single User
-router.route("/:id").get(getSingleUser).delete(deleteUser);
-
-//change status
-router.route("/:id/active").put(changeActiveStatus);
-
-// Edit User Information
-router.route("/:id/edit").put(editUserTable);
-
 //Add Coupon
 router.route("/add-new-coupon").post(addNewCoupon);
 
@@ -44,6 +39,24 @@ router.route("/add-category").post(addCategory);
 
 //Add Sub Category
 router.route("/add-sub-category").post(addSubCategory);
+
+//Content Management Module
+router.route("/get-all-content").get(getAllContent);
+
+router.route("/terms-and-conditions").put(updateTermsAndConditions);
+
+router.route("/privacy-policy").put(updatePrivacyPolicy);
+
+router.route("/about-us").put(updateAboutUs);
+
+//get Single User
+router.route("/:id").get(getSingleUser).delete(deleteUser);
+
+//change status
+router.route("/:id/active").put(changeActiveStatus);
+
+// Edit User Information
+router.route("/:id/edit").put(editUserTable);
 
 //Add Content Creators
 module.exports = router;

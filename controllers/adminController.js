@@ -4,6 +4,7 @@ const Coupon = require("../models/Coupon");
 const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
 const ContentCreator = require("../models/ContentCreator");
+const ContentManagement = require("../models/ContentManagement");
 
 const json2csv = require("json2csv");
 const fs = require("fs").promises;
@@ -14,7 +15,6 @@ const {
   createTokenUser,
   checkPermissions,
 } = require("../utils");
-
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -185,22 +185,22 @@ const addNewCoupon = async (req, res) => {
     value,
     desc,
     max_value,
-    max_redemptions
+    max_redemptions,
   });
   res.status(StatusCodes.OK).json({ msg: "Coupon Successfuly Created" });
-}
+};
 
 const getAllCoupons = async (req, res) => {
   const coupons = await Coupon.findAll({
     attributes: {
-      include: ['name', 'value', 'desc', 'max_value', 'max_redemptions'],
-    }
+      include: ["name", "value", "desc", "max_value", "max_redemptions"],
+    },
   });
   console.log("Coupons: ", coupons);
 
   const couponCount = coupons.length;
   res.status(StatusCodes.OK).json({ coupons, count: couponCount });
-}
+};
 
 const addCategory = async (req, res) => {
   const { name, desc } = req.body;
@@ -213,38 +213,34 @@ const addCategory = async (req, res) => {
 
   const newCategory = await Category.create({
     name,
-    desc
+    desc,
   });
 
   res.status(StatusCodes.OK).json({ msg: "Category Added Successfully" });
-}
+};
 
 const addSubCategory = async (req, res) => {
   const { name, category_id, desc } = req.body;
 
-  const categoryId = await Category.findOne({ where: { id: category_id } })
+  const categoryId = await Category.findOne({ where: { id: category_id } });
 
   console.log("Category ID: ", categoryId);
 
   if (!categoryId) {
-    throw new CustomError.NotFoundError(
-      "Category doesn't exist"
-    );
+    throw new CustomError.NotFoundError("Category doesn't exist");
   }
   const existingSubCategory = await SubCategory.findOne({ where: { name } });
   if (existingSubCategory) {
-    throw new CustomError.BadRequestError(
-      "Category already exist"
-    );
+    throw new CustomError.BadRequestError("Category already exist");
   }
   const newSubCategory = await SubCategory.create({
     name,
     category_id,
-    desc
+    desc,
   });
 
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
-}
+};
 
 const getAllContentCreator = async (req, res) => {
   const creators = await ContentCreator.findAll();
@@ -268,14 +264,132 @@ const addContentCreator = async (req, res) => {
     const newUserId = newUser.id;
     const newContentCreator = ContentCreator.create({
       newUserId,
-      name
-    })
+      name,
+    });
   }
 
   const newContentCreator = ContentCreator.create({
-    name
-  })
-}
+    name,
+  });
+};
+
+const updateTermsAndConditions = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const termsAndConditionsItem = await ContentManagement.findOne({
+    where: { name: "Terms And Conditions" },
+  });
+
+  if (!termsAndConditionsItem) {
+    throw new CustomError.NotFoundError("Terms And Conditions Not Found");
+  }
+
+  termsAndConditionsItem.description = updatedDescription;
+  await termsAndConditionsItem.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Terms And Conditions Updated Successfully" });
+};
+
+const updatePrivacyPolicy = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const privacyPolicyItem = await ContentManagement.findOne({
+    where: { name: "Privacy Policy" },
+  });
+
+  if (!privacyPolicyItem) {
+    throw new CustomError.NotFoundError("Privacy Policy Not Found");
+  }
+
+  privacyPolicyItem.description = updatedDescription;
+  await privacyPolicyItem.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Privacy Policy Updated Successfully" });
+};
+
+const updateAboutUs = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const aboutUsItem = await ContentManagement.findOne({
+    where: { name: "About Us" },
+  });
+
+  if (!aboutUsItem) {
+    throw new CustomError.NotFoundError("About Us Not Found");
+  }
+
+  aboutUsItem.description = updatedDescription;
+  await aboutUsItem.save();
+
+  res.status(StatusCodes.OK).json({ msg: "About Us Updated Successfully" });
+};
+
+const getAllContent = async (req, res) => {
+  const termsAndConditionsItem = await ContentManagement.findOne({
+    where: { name: "Terms And Conditions" },
+  });
+  const privacyPolicyItem = await ContentManagement.findOne({
+    where: { name: "Privacy Policy" },
+  });
+  const aboutUsItem = await ContentManagement.findOne({
+    where: { name: "About Us" },
+  });
+
+  const termsAndConditions = termsAndConditionsItem.description;
+  const aboutUs = aboutUsItem.description;
+  const privacyPolicy = privacyPolicyItem.description;
+
+  res
+    .status(StatusCodes.OK)
+    .json({ termsAndConditions, privacyPolicy, aboutUs });
+};
+
+const rejectContent = async (req, res) => {
+  const contentId = req.params.id;
+
+  const content = await ContentManagement.findByPk(contentId);
+
+  if (!content) {
+    throw new CustomError.NotFoundError("Content Creator Not Found");
+  }
+
+  await content.destroy();
+
+  res.status(StatusCodes.OK).json({ msg: "Content Rejected!!" });
+};
+
+const acceptAndAddToUserChannel = async (req, res) => {
+  const contentId = req.params.id;
+  const userId = req.body.userId;
+
+  const content = await ContentManagement.findByPk(contentId);
+  if (content.channelId) {
+    return res
+      .status(400)
+      .json({ error: "Content is already associated with a channel" });
+  }
+
+  const userChannel = await Channel.findOne({ where: { userId } });
+
+  if (!userChannel) {
+    throw new CustomError.NotFoundError("User's channel not found");
+  }
+
+  // Mark the content as accepted (modify as per your database structure)
+  content.accepted = true; // Assuming you have an "accepted" field in your model
+
+  content.channelId = userChannel.id; // Assuming you have a "channelId" field in your ContentManagement model
+
+  await content.save();
+
+  res.status(200).json({
+    message: "Content accepted and added to the user's channel successfully",
+  });
+};
 
 module.exports = {
   getAllUsers,
@@ -289,5 +403,9 @@ module.exports = {
   getAllCoupons,
   addCategory,
   addSubCategory,
-  addContentCreator
+  addContentCreator,
+  updateTermsAndConditions,
+  updatePrivacyPolicy,
+  updateAboutUs,
+  getAllContent,
 };
