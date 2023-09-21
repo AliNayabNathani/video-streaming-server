@@ -557,6 +557,16 @@ const getAllChannels = async (req, res) => {
     return map;
   }, {});
 
+  // const channelVideos = await Video.findAll({
+  //   where: { id: creatorIds },
+  //   attributes: ["id", "name"],
+  // });
+
+  // const creatorMap = contentCreators.reduce((map, creator) => {
+  //   map[creator.id] = creator.name;
+  //   return map;
+  // }, {});
+
   channels.forEach((channel) => {
     channel.creator_name = creatorMap[channel.content_creator_id];
   });
@@ -758,8 +768,6 @@ const rejectContent = async (req, res) => {
 
   // checkPermissions(user_admin, content.user_id);
 
-  content.status = "Reject";
-
   const contentapproval = await ContentApproval.create({
     user_id: user_admin.id,
     video_id: contentId,
@@ -773,10 +781,10 @@ const rejectContent = async (req, res) => {
 
 const acceptContent = async (req, res) => {
   const contentId = req.params.id;
-  const user_admin = req.user;
+  // const user_admin = req.user;
 
-  const content = await ContentApproval.findOne({
-    where: { video_id: contentId },
+  const content = await Video.findOne({
+    where: { id: contentId },
   });
   console.log("here", content);
 
@@ -786,10 +794,8 @@ const acceptContent = async (req, res) => {
 
   // checkPermissions(user_admin, content.user_id);
 
-  content.status = "Aceept";
-
   const contentapproval = await ContentApproval.create({
-    user_id: user_admin.id,
+    user_id: 1,
     video_id: contentId,
     status: "Accept",
   });
