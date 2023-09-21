@@ -27,6 +27,13 @@ const {
   editContentCreatorTable,
   changeContentCreatorActiveStatus,
   changeChannelActiveStatus,
+  getAllChannels,
+  getSingleChannel,
+  getAllVideos,
+  getAllCategoryAndSubCategory,
+  GetContentApproval,
+  rejectContent,
+  acceptContent,
 } = require("../controllers/adminController");
 const { authorizePermission } = require("../middleware/authentication");
 
@@ -46,10 +53,40 @@ router.route("/add-new-coupon").post(addNewCoupon);
 router.route("/get-coupons").get(getAllCoupons);
 
 //Add Content Creators
-router.route("/add-content-creator").post(addContentCreator);
+// router.route("/add-content-creator").post(addContentCreator);
 
 //Get Content Creators
-router.route("/get-content-creator").get(getAllContentCreator);
+// router.route("/get-content-creator").get(getAllContentCreator);
+
+//Add Category
+router.route("/add-category").post(addCategory);
+
+//Add Sub Category
+router.route("/add-sub-category").post(addSubCategory);
+
+//Content Management Module
+router.route("/get-all-content").get(getAllContent);
+router.route("/terms-and-conditions").put(updateTermsAndConditions);
+router.route("/privacy-policy").put(updatePrivacyPolicy);
+router.route("/about-us").put(updateAboutUs);
+
+//Get all categories
+router.route("/get-all-categories").get(getSubCategory);
+
+//Get All Channels
+router.route("/channels").get(getAllChannels);
+
+//Get Content Approval
+router.route("/content-approval").get(GetContentApproval);
+
+//Get All Videos
+router.route("/videos").get(getAllVideos);
+
+//Get All Cat and Sub Cat
+router.route("/category-management").get(getAllCategoryAndSubCategory);
+
+//Get All Channels
+router.route("/channel/:id").get(getSingleChannel);
 
 //Get or Delete ContentCreator
 router
@@ -60,29 +97,13 @@ router
 //Edit ContentCreator info
 router.route("/contentcreator/:id/edit").put(editContentCreatorTable);
 
+//change change status
+router.route("/:id/active-channel").put(changeChannelActiveStatus);
+
 //Set Content Creator Status
 router
-  .route("/contentcreator/:id/active")
+  .route("/:id/active-contentcreator")
   .put(changeContentCreatorActiveStatus);
-
-//Add Category
-router.route("/add-category").post(addCategory);
-
-//Add Sub Category
-router.route("/add-sub-category").post(addSubCategory);
-
-//Content Management Module
-router.route("/get-all-content").get(getAllContent);
-
-router.route("/terms-and-conditions").put(updateTermsAndConditions);
-
-router.route("/privacy-policy").put(updatePrivacyPolicy);
-
-router.route("/about-us").put(updateAboutUs);
-
-//get Single User
-//Get all categories
-router.route("/get-all-categories").get(getSubCategory);
 
 //Get or Delete Category
 router.route("/category/:id").get(getSingleCategory).delete(deleteCategory);
@@ -90,13 +111,19 @@ router.route("/category/:id").get(getSingleCategory).delete(deleteCategory);
 //Edit Category info
 router.route("/category/:id/edit").put(editCategoryTable);
 
+//reject content
+router.route("/content/:id/reject").post(rejectContent);
+
+//accept
+router.route("/content/:id/accept").post(acceptContent);
+
 //change Channel status
-router.route("/channel/:id/active").put(changeChannelActiveStatus);
+// router.route("/channel/:id/active").put(changeChannelActiveStatus);
 
 //Get or Delete Single User
 router.route("/:id").get(getSingleUser).delete(deleteUser);
 
-//change status
+//change user status
 router.route("/:id/active").put(changeActiveStatus);
 
 // Edit User Information

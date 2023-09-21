@@ -18,10 +18,13 @@ const config = require("./config/auth0");
 //database
 const { connectDB, dbConfig } = require("./db/connect");
 const sequelize = require("./config/sequelize");
+const pusher = require("./config/pusher");
 
 //routers
 const authRouter = require("./routes/authRoutes");
 const adminRouter = require("./routes/adminRoutes");
+const otherRouter = require("./routes/otherRoutes");
+const contentCreatorRouter = require("./routes/contentCreatorRoutes");
 
 //import middlewares
 const notFoundMiddleware = require("./middleware/not-found");
@@ -48,16 +51,14 @@ app.use(express.json());
 app.use(fileUpload());
 app.use(auth(config));
 //routes
-// app.get("/", (req, res) => {
-//   res.send("<h1>Video Streaming</h1>");
-// });
 
 app.get("/", (req, res) => {
   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
 });
-
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
+app.use("/api/v1/other", otherRouter);
+app.use("/api/v1/creator", contentCreatorRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

@@ -1,12 +1,11 @@
 const User = require("../models/User");
 const Role = require("../models/Role");
+const ContentCreator = require("../models/ContentCreator");
+const Channel = require("../models/Channel");
 const Coupon = require("../models/Coupon");
 const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
-const ContentCreator = require("../models/ContentCreator");
 const ContentManagement = require("../models/ContentManagement");
-
-const Channel = require("../models/Channel");
 const json2csv = require("json2csv");
 const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
@@ -17,6 +16,8 @@ const {
   checkPermissions,
 } = require("../utils");
 const { STATUS_CODES } = require("http");
+const Video = require("../models/Video");
+const ContentApproval = require("../models/ContentApproval");
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -218,7 +219,9 @@ const addCategory = async (req, res) => {
     desc,
   });
 
-  res.status(StatusCodes.OK).json({ msg: "Category Added Successfully" });
+  res
+    .status(StatusCodes.OK)
+    .json({ newCategory, msg: "Category Added Successfully" });
 };
 
 const addSubCategory = async (req, res) => {
@@ -351,49 +354,6 @@ const getAllContent = async (req, res) => {
     .json({ termsAndConditions, privacyPolicy, aboutUs });
 };
 
-const rejectContent = async (req, res) => {
-  const contentId = req.params.id;
-
-  const content = await ContentManagement.findByPk(contentId);
-
-  if (!content) {
-    throw new CustomError.NotFoundError("Content Creator Not Found");
-  }
-
-  await content.destroy();
-
-  res.status(StatusCodes.OK).json({ msg: "Content Rejected!!" });
-};
-
-const acceptAndAddToUserChannel = async (req, res) => {
-  const contentId = req.params.id;
-  const userId = req.body.userId;
-
-  const content = await ContentManagement.findByPk(contentId);
-  if (content.channelId) {
-    return res
-      .status(400)
-      .json({ error: "Content is already associated with a channel" });
-  }
-
-  const userChannel = await Channel.findOne({ where: { userId } });
-
-  if (!userChannel) {
-    throw new CustomError.NotFoundError("User's channel not found");
-  }
-
-  // Mark the content as accepted (modify as per your database structure)
-  content.accepted = true; // Assuming you have an "accepted" field in your model
-
-  content.channelId = userChannel.id; // Assuming you have a "channelId" field in your ContentManagement model
-
-  await content.save();
-
-  res.status(200).json({
-    message: "Content accepted and added to the user's channel successfully",
-  });
-};
-
 const getSubCategory = async (req, res) => {
   const subCategory = await SubCategory.findAll({});
   const subCategoryCount = subCategory.length;
@@ -449,7 +409,8 @@ const deleteCategory = async (req, res) => {
 const getSingleCategory = async (req, res) => {
   const categoryId = req.params.id;
   console.log(categoryId);
-  const category = await category.findByPk(categoryId, {});
+  const category = await Category.findByPk(categoryId);
+
   if (!category) {
     throw new CustomError.NotFoundError(`No category with id ${categoryId}`);
   }
@@ -520,17 +481,15 @@ const editContentCreatorTable = async (req, res) => {
 
   await ContentCreatorToEdit.save();
 
-  res
-    .status(StatusCodes.OK)
-    .json({
-      msg: "Content Creator information updated",
-      ContentCreator: ContentCreatorToEdit,
-    });
+  res.status(StatusCodes.OK).json({
+    msg: "Content Creator information updated",
+    ContentCreator: ContentCreatorToEdit,
+  });
 };
 
 const changeContentCreatorActiveStatus = async (req, res) => {
   const { id: contentCreatorIdToChange } = req.params;
-  const { ContentCreator: requestContentCreator } = req;
+  // const { ContentCreator: requestContentCreator } = req;
 
   const contentCreatorToChange = await ContentCreator.findByPk(
     contentCreatorIdToChange
@@ -554,13 +513,290 @@ const changeContentCreatorActiveStatus = async (req, res) => {
 };
 
 const changeChannelActiveStatus = async (req, res) => {
-  const { id: ChannelId } = req.params.id;
+  const { id: channelIdToChange } = req.params;
+  // const { user: requestUser } = req;
 
-  if (!ChannelId) {
-    req.status(StatusCodes.NotFoundError).json({ msg: "Channel Not Found" });
+  const channelToChange = await Channel.findByPk(channelIdToChange);
+
+  if (!channelToChange) {
+    throw new CustomError.NotFoundError(
+      `No Channel found with id ${channelIdToChange}`
+    );
   }
-  // checkPermissions(requestContentCreator, contentCreatorToChange.id);
-  channelToChange = await Channel.finf;
+
+  // checkPermissions(requestUser, userToChange.id);
+
+  channelToChange.status =
+    channelToChange.status === "Active" ? "Inactive" : "Active";
+  await channelToChange.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Status Changed", channel: channelToChange });
+};
+
+const getAllChannels = async (req, res) => {
+  const channels = await Channel.findAll({
+    raw: true,
+    attributes: ["id", "name", "content_creator_id"],
+  });
+
+  if (!channels || channels.length === 0) {
+    throw new CustomError.NotFoundError(`No Channel found!!`);
+  }
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  channels.forEach((channel) => {
+    channel.creator_name = creatorMap[channel.content_creator_id];
+  });
+
+  const channelCount = channels.length;
+  res.status(StatusCodes.OK).json({ channels, channelCount });
+};
+
+const getSingleChannel = async (req, res) => {
+  const channelId = req.params.id;
+
+  const channel = await Channel.findByPk(channelId);
+  const videos = await Video.findAll({
+    where: { channelId: channel.id },
+  });
+
+  if (!channel) {
+    throw new CustomError.NotFoundError(`No channel with id ${channelId}`);
+  }
+
+  const countVideos = videos.length;
+
+  //Uncomment after permissions set
+  // checkPermissions(req.user, user.id);
+
+  res.status(StatusCodes.OK).json({ channel, videos, countVideos });
+};
+
+const getAllVideos = async (req, res) => {
+  const videos = await Video.findAll({
+    raw: true,
+    attributes: [
+      "id",
+      "name",
+      "views",
+      "rented_amount",
+      "purchasing_amount",
+      "createdAt",
+      "channelId",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: `No Videos found!!` });
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  const contentApprovals = await ContentApproval.findAll({
+    where: { video_id: videoIds },
+    raw: true,
+  });
+
+  const videoStatusMap = {};
+  contentApprovals.forEach((approval) => {
+    videoStatusMap[approval.video_id] = approval.status;
+  });
+
+  videos.forEach((video) => {
+    video.status = videoStatusMap[video.id] || "Pending";
+  });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getAllCategoryAndSubCategory = async (req, res, next) => {
+  const categories = await Category.findAll({
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  if (!categories || categories.length === 0) {
+    throw new CustomError.NotFoundError(`No Categories found!!`);
+  }
+
+  const subcategories = await SubCategory.findAll({
+    raw: true,
+    attributes: ["id", "name", "category_id", "desc"],
+  });
+
+  // Organize subcategories into categories
+  const categoriesWithSubcategories = categories.map((category) => {
+    category.subcategories = subcategories.filter(
+      (subcategory) => subcategory.category_id === category.id
+    );
+    return category;
+  });
+
+  res.status(StatusCodes.OK).json({ categories: categoriesWithSubcategories });
+};
+
+const GetContentApproval = async (req, res, next) => {
+  const videos = await Video.findAll({
+    raw: true,
+    attributes: [
+      "id",
+      "name",
+      "rented_amount",
+      "purchasing_amount",
+      "createdAt",
+      "channelId",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: `No Videos found!!` });
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  const contentApprovals = await ContentApproval.findAll({
+    where: { video_id: videoIds },
+    raw: true,
+  });
+
+  const videoStatusMap = {};
+  contentApprovals.forEach((approval) => {
+    videoStatusMap[approval.video_id] = approval.status;
+  });
+
+  videos.forEach((video) => {
+    video.status = videoStatusMap[video.id] || "Pending";
+  });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const rejectContent = async (req, res) => {
+  const contentId = req.params.id;
+  const user_admin = req.user;
+
+  const content = await Video.findByPk(contentId);
+
+  if (!content) {
+    throw new CustomError.NotFoundError("Content Not Found!!");
+  }
+
+  // checkPermissions(user_admin, content.user_id);
+
+  content.status = "Reject";
+
+  const contentapproval = await ContentApproval.create({
+    user_id: user_admin.id,
+    video_id: contentId,
+    status: "Reject",
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ contentapproval, msg: "Content Rejected!!" });
+};
+
+const acceptContent = async (req, res) => {
+  const contentId = req.params.id;
+  const user_admin = req.user;
+
+  const content = await ContentApproval.findOne({
+    where: { video_id: contentId },
+  });
+  console.log("here", content);
+
+  if (!content) {
+    throw new CustomError.NotFoundError("Content Not Found!!");
+  }
+
+  // checkPermissions(user_admin, content.user_id);
+
+  content.status = "Aceept";
+
+  const contentapproval = await ContentApproval.create({
+    user_id: user_admin.id,
+    video_id: contentId,
+    status: "Accept",
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ contentapproval, msg: "Content Accepted!!" });
 };
 
 module.exports = {
@@ -590,4 +826,11 @@ module.exports = {
   editContentCreatorTable,
   changeContentCreatorActiveStatus,
   changeChannelActiveStatus,
+  getAllChannels,
+  getSingleChannel,
+  getAllVideos,
+  getAllCategoryAndSubCategory,
+  GetContentApproval,
+  rejectContent,
+  acceptContent,
 };

@@ -22,7 +22,7 @@ const SubCategory = sequelize.define(
         key: "id",
       },
       onUpdate: "CASCADE",
-      onDelete: "SET NULL",
+      onDelete: "CASCADE",
     },
     desc: {
       type: DataTypes.STRING,

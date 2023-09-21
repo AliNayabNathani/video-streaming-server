@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const bcrypt = require("bcryptjs");
 const Role = require("./Role");
+const ContentCreator = require("./ContentCreator");
 
 const User = sequelize.define(
   "User",
@@ -52,10 +53,15 @@ const User = sequelize.define(
   }
 );
 
-// User.belongsTo(Role, {
-//   foreignKey: "role_id",
-//   as: "role",
-// });
+User.belongsTo(Role, {
+  foreignKey: "role_id",
+  as: "role",
+});
+
+User.hasOne(ContentCreator, {
+  foreignKey: "user_id",
+  as: "contentCreator",
+});
 
 User.beforeCreate(async (user, options) => {
   if (user.changed("password")) {
@@ -71,10 +77,10 @@ User.beforeCreate(async (user, options) => {
 User.prototype.comparePassword = async function (candidatePassword) {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
 
-  console.log("Comparing passwords:");
-  console.log("candidatePassword:", candidatePassword);
-  console.log("this.password:", this.password);
-  console.log("isMatch:", isMatch);
+  // console.log("Comparing passwords:");
+  // console.log("candidatePassword:", candidatePassword);
+  // console.log("this.password:", this.password);
+  // console.log("isMatch:", isMatch);
 
   return isMatch;
 };
