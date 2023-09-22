@@ -1,6 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const Channel = require("./Channel");
+const Trailer = require("./Trailer");
+const Episode = require("./Episodes");
 
 const Video = sequelize.define(
   "Video",
@@ -16,14 +18,6 @@ const Video = sequelize.define(
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    file: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    poster: {
-      type: DataTypes.STRING,
       allowNull: true,
     },
     rented_amount: {
@@ -43,11 +37,24 @@ const Video = sequelize.define(
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: "channels",
+        model: "channel",
         key: "id",
       },
       onUpdate: "CASCADE",
-      onDelete: "SET NULL",
+      onDelete: "CASCADE",
+    },
+
+    Type: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    Cast: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    Genre: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {
@@ -55,8 +62,24 @@ const Video = sequelize.define(
   }
 );
 
-// Video.belongsTo(Channel, {
-//   foreignKey: "channelId",
-//   as: "channel",
-// });
+Video.hasMany(Trailer, {
+  foreignKey: "videoId",
+  as: "trailers",
+});
+
+Video.hasMany(Episode, {
+  foreignKey: "videoId",
+  as: "episodes",
+});
+
+Video.prototype.getChannelDetails = async function () {
+  try {
+    const videoDetails = await Channel.findByPk(this.channelId);
+    return videoDetails;
+  } catch (error) {
+    console.error("Error fetching associated Channel:", error);
+    throw error;
+  }
+};
+
 module.exports = Video;

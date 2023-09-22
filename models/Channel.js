@@ -19,7 +19,7 @@ const Channel = sequelize.define(
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: "contentcreator",
+        model: "content_creator",
         key: "id",
       },
     },
@@ -33,14 +33,21 @@ const Channel = sequelize.define(
   }
 );
 
-// Channel.belongsTo(ContentCreator, {
-//   foreignKey: "content_creator_id",
-//   as: "content_creator",
-// });
-
 Channel.hasMany(Video, {
   foreignKey: "channelId",
   as: "videos",
 });
+
+Channel.prototype.getContentCreator = async function () {
+  try {
+    const contentCreator = await ContentCreator.findByPk(
+      this.content_creator_id
+    );
+    return contentCreator;
+  } catch (error) {
+    console.error("Error fetching associated ContentCreator:", error);
+    throw error;
+  }
+};
 
 module.exports = Channel;

@@ -9,6 +9,7 @@ const ContentCreator = sequelize.define(
     id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
+      autoIncrement: true,
     },
     name: {
       type: DataTypes.STRING,
@@ -30,18 +31,37 @@ const ContentCreator = sequelize.define(
     },
   },
   {
-    tableName: "contentcreator",
+    tableName: "content_creator",
   }
 );
-
-// ContentCreator.belongsTo(User, {
-//   foreignKey: "user_id",
-//   as: "user",
-// });
 
 ContentCreator.hasMany(Channel, {
   foreignKey: "content_creator_id",
   as: "channels",
 });
+
+// Function to update the total_videos count for a content creator
+async function updateTotalVideos(contentCreatorId) {
+  try {
+    const contentCreator = await ContentCreator.findByPk(contentCreatorId);
+
+    if (contentCreator) {
+      const currentTotalVideos = contentCreator.total_videos;
+      contentCreator.total_videos = currentTotalVideos + 1;
+      await contentCreator.save();
+      return contentCreator;
+    }
+  } catch (error) {
+    console.error("Error updating total_videos:", error);
+    throw error;
+  }
+}
+
+// Usage example by Ali for later use:
+// Call this function whenever a new video is added to a channel
+// Pass the content creator's ID to updateTotalVideos
+// For example:
+// const contentCreatorId = 1; // Replace with the actual content creator's ID
+// await updateTotalVideos(contentCreatorId);
 
 module.exports = ContentCreator;
