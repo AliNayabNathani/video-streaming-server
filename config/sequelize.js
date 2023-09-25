@@ -5,7 +5,7 @@ const sequelize = new Sequelize({
   host: "localhost",
   port: 5432,
   username: "postgres",
-  password: "inspedium",
+  password: "admin",
   database: "videoserver",
 });
 
