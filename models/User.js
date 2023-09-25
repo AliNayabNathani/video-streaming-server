@@ -87,7 +87,7 @@ User.prototype.comparePassword = async function (candidatePassword) {
 
 // async function updateUserRole() {
 //   try {
-//     const user = await User.findByPk(2);
+//     const user = await User.findByPk(9);
 
 //     if (!user) {
 //       console.log("User not found.");

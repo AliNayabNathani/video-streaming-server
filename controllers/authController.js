@@ -4,7 +4,7 @@ const CustomError = require("../errors");
 const { attachCookiesToResponse, createTokenUser } = require("../utils");
 
 const register = async (req, res) => {
-  const { email, name, password, role_id } = req.body;
+  const { email, name, password } = req.body;
 
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
@@ -15,12 +15,12 @@ const register = async (req, res) => {
     name,
     email,
     password,
-    role_id,
+
   });
 
   res
     .status(StatusCodes.CREATED)
-    .json({ msg: "Account Created Successfully!" });
+    .json({ msg: "Account Created Successfully!", newUser });
 };
 
 const login = async (req, res) => {
