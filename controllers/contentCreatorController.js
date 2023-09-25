@@ -19,7 +19,6 @@ const { uploadVideo, uploadVideoPoster } = require("./otherController");
 const MyVideos = async (req, res) => {
     const userId = "10";
 
-
     const contentCreator = await ContentCreator.findOne({
         where: {
             user_id: userId,
@@ -29,7 +28,6 @@ const MyVideos = async (req, res) => {
     if (!contentCreator) {
         throw new CustomError.NotFoundError(`User is not a content creator.`);
     }
-
 
     const contentCreatorId = contentCreator.id
 
@@ -155,12 +153,35 @@ const addNewVideo = async (req, res) => {
 
 
 const getMyChannels = async (req, res) => {
-    const userId = 1;
+    const userId = '10';
+    const contentCreator = await ContentCreator.findOne({
+        where: {
+            user_id: userId,
+        },
+    });
+
+    if (!contentCreator) {
+        throw new CustomError.NotFoundError(`User is not a content creator.`);
+    }
+    const contentCreatorId = contentCreator.id
 
     const channels = await Channel.findAll({
-        where: { content_creator_id: userId },
-        raw: true,
+        where: { content_creator_id: contentCreatorId },
         attributes: ["id", "name", "content_creator_id"],
+        include: [
+            {
+                model: Video,
+                as: 'videos',
+                attributes: ["id", "name", "views", "Type"],
+                include: [
+                    {
+                        model: Trailer,
+                        as: 'trailers',
+                        attributes: ["id", "poster", "file", "title"],
+                    },
+                ],
+            },
+        ],
     });
 
     if (!channels || channels.length === 0) {
@@ -173,6 +194,120 @@ const getMyChannels = async (req, res) => {
 
     res.status(StatusCodes.OK).json({ channels, channelCount });
 };
+
+const getSingleChannelDetail = async (req, res) => {
+    const { id: channelId } = req.params;
+
+    const channel = await Channel.findByPk(channelId, {
+        include: [
+            {
+                model: Video,
+                as: 'videos',
+                attributes: ["id", "name", "views", "Type"],
+                include: [
+                    {
+                        model: Trailer,
+                        as: 'trailers',
+                        attributes: ["id", "poster", "file", "title"],
+                    },
+                    {
+                        model: Episode,
+                        as: 'episodes',
+                        attributes: ["id", "title", "description", "file", "poster"],
+                    },
+                ],
+            },
+        ],
+    });
+
+    if (!channel) {
+        throw new CustomError.NotFoundError(`Channel with ID ${channelId} not found.`);
+    }
+
+    const episodeCount = channel.videos.reduce((total, video) => {
+        return total + video.episodes.length;
+    }, 0);
+
+    res.status(StatusCodes.OK).json({ channel, episodeCount });
+};
+
+const createNewChannel = async (req, res) => {
+    const { name } = req.body;
+    const content_creator_id = 4;
+    // const content_creator_id = req.user.id;
+
+    if (!name || !content_creator_id) {
+        throw new CustomError.BadRequestError('Name and content_creator_id are required for creating a channel');
+    }
+
+    const channel = await Channel.create({
+        name,
+        content_creator_id,
+    });
+
+    res.status(StatusCodes.CREATED).json({ channel });
+};
+
+const createNewChannelWithEpisodes = async (req, res) => {
+    const { name, episodes } = req.body;
+    const content_creator_id = 4;
+
+    if (!name || !content_creator_id) {
+        throw new CustomError.BadRequestError('Name and content_creator_id are required for creating a channel');
+    }
+
+    const channel = await Channel.create({
+        name,
+        content_creator_id,
+    });
+
+    if (Array.isArray(episodes) && episodes.length > 0) {
+        const createdEpisodes = await Episode.bulkCreate(
+            episodes.map((episode) => ({
+                title: episode.title || 'Episode Title',
+                file: episode.file,
+                poster: episode.poster || null,
+                description: episode.description || null,
+                videoId: channel.id,
+            }))
+        );
+        channel.addEpisodes(createdEpisodes);
+    }
+
+    res.status(StatusCodes.CREATED).json({ channel });
+};
+
+// const createNewChannelWithEpisodes = async (req, res) => {
+//     const { name, episodes } = req.body;
+//     const content_creator_id = 4;
+
+//     if (!name || !content_creator_id) {
+//       throw new CustomError.BadRequestError('Name and content_creator_id are required for creating a channel');
+//     }
+
+//     const channel = await Channel.create({
+//       name,
+//       content_creator_id,
+//     });
+
+//     if (Array.isArray(episodes) && episodes.length > 0) {
+//       const createdEpisodes = await Episode.bulkCreate(
+//         episodes.map((episode) => ({
+//           title: episode.title || 'Episode Title',
+//           file: episode.file,
+//           poster: episode.poster || null,
+//           description: episode.description || null,
+//           videoId: channel.id,
+//         }))
+//       );
+
+//       const video = await Video.create({ channelId: channel.id });
+//       await video.addEpisodes(createdEpisodes);
+//     }
+
+//     res.status(StatusCodes.CREATED).json({ channel });
+//   };
+
 
 const submitFeedback = async (req, res) => {
     const userId = "10"; //req.user after auth kardena
@@ -194,4 +329,13 @@ const submitFeedback = async (req, res) => {
     res.status(StatusCodes.CREATED).json({ feedback });
 };
 
-module.exports = { MyVideos, getMyChannels, getSingleMyVideo, changeVideoStatus, addNewVideo, submitFeedback };
+module.exports = {
+    MyVideos,
+    getMyChannels,
+    getSingleMyVideo,
+    changeVideoStatus,
+    addNewVideo,
+    submitFeedback,
+    getSingleChannelDetail,
+    createNewChannel
+};

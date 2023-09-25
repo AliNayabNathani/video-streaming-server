@@ -48,7 +48,37 @@ const login = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Logged In" });
 };
 
+const updatePassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ error: 'Please provide both old and new passwords' });
+  }
+
+  // const user = await User.findByPk(req.user.id);
+  const user = await User.findByPk(11);
+
+  if (!user) {
+    throw new CustomError.NotFoundError("User not found");
+  }
+
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.BadRequestError("Invalid credentials");
+
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ message: 'Password changed successfully' });
+};
+
+
 module.exports = {
   login,
   register,
+  updatePassword
 };
