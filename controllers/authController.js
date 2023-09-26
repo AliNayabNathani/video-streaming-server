@@ -15,7 +15,6 @@ const register = async (req, res) => {
     name,
     email,
     password,
-
   });
 
   res
@@ -52,7 +51,9 @@ const updatePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   if (!oldPassword || !newPassword) {
-    return res.status(400).json({ error: 'Please provide both old and new passwords' });
+    return res
+      .status(400)
+      .json({ error: "Please provide both old and new passwords" });
   }
 
   // const user = await User.findByPk(req.user.id);
@@ -66,19 +67,40 @@ const updatePassword = async (req, res) => {
 
   if (!isPasswordCorrect) {
     throw new CustomError.BadRequestError("Invalid credentials");
-
   }
 
   user.password = newPassword;
 
   await user.save();
 
-  res.status(StatusCodes.OK).json({ message: 'Password changed successfully' });
+  res.status(StatusCodes.OK).json({ message: "Password changed successfully" });
 };
 
+const updateProfile = async (req, res) => {
+  const { name, email, mobile_number } = req.body;
+  const userId = req.user.id;
+
+  const user = await User.findByPk(userId);
+  if (name) {
+    user.name = name;
+  }
+
+  if (email) {
+    user.email = email;
+  }
+
+  if (mobile_number) {
+    user.mobile_number = mobile_number;
+  }
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ message: "Profile updated successfully." });
+};
 
 module.exports = {
   login,
   register,
-  updatePassword
+  updatePassword,
+  updateProfile,
 };

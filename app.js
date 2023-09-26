@@ -24,7 +24,7 @@ const pusher = require("./config/pusher");
 //routers
 const authRouter = require("./routes/authRoutes");
 const adminRouter = require("./routes/adminRoutes");
-// const clientRouter = require("./routes/clientRoutes");
+const clientRouter = require("./routes/clientRoutes");
 const otherRouter = require("./routes/otherRoutes");
 const contentCreatorRouter = require("./routes/contentCreatorRoutes");
 
@@ -61,7 +61,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
 app.use("/api/v1/creator", contentCreatorRouter);
-// app.use("/api/v1/client", clientRouter);
+app.use("/api/v1/client", clientRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
