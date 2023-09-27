@@ -7,6 +7,7 @@ const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
 const ContentManagement = require("../models/ContentManagement");
 const json2csv = require("json2csv");
+// const json2csv = require("json2csv").Parser;
 const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
@@ -94,7 +95,7 @@ const changeActiveStatus = async (req, res) => {
     );
   }
 
-  checkPermissions(requestUser, userToChange.id);
+  // checkPermissions(requestUser, userToChange.id);
 
   userToChange.status =
     userToChange.status === "Active" ? "InActive" : "Active";
@@ -132,9 +133,9 @@ const editUserTable = async (req, res) => {
     .json({ msg: "User information updated", user: userToEdit });
 };
 
-const exportCsv = async (req, res) => {
+const UserExportCsv = async (req, res) => {
   const { user: requestUser } = req;
-  checkPermissions(requestUser);
+  // checkPermissions(requestUser);
 
   const users = await User.findAll({
     attributes: { exclude: ["password"] },
@@ -247,36 +248,168 @@ const addSubCategory = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
 };
 
-//Doesn't work on postman but select * works on postgre
 const getAllContentCreator = async (req, res) => {
   const creators = await ContentCreator.findAll({});
+
+  const creatorData = await Promise.all(
+    creators.map(async (creator) => {
+      const user = await User.findByPk(creator.user_id, {
+        attributes: ["gender"],
+      });
+
+      return {
+        id: creator.id,
+        name: creator.name,
+        total_videos: creator.total_videos,
+        subscribers: creator.subscribers,
+        status: creator.status,
+        gender: user ? user.gender : null,
+      };
+    })
+  );
+
   const creatorCount = creators.length;
 
-  res.status(StatusCodes.OK).json({ creators, count: creatorCount });
+  res
+    .status(StatusCodes.OK)
+    .json({ creators: creatorData, count: creatorCount });
+};
+
+const getAllContentCreatorCsv = async (req, res) => {
+  const creators = await ContentCreator.findAll({});
+  const creatorData = await Promise.all(
+    creators.map(async (creator) => {
+      const user = await User.findByPk(creator.user_id, {
+        attributes: ["gender"],
+      });
+
+      return {
+        id: creator.id,
+        name: creator.name,
+        total_videos: creator.total_videos,
+        subscribers: creator.subscribers,
+        status: creator.status,
+        gender: user ? user.gender : null,
+      };
+    })
+  );
+
+  const creatorCount = creators.length;
+
+  const fields = [
+    "id",
+    "name",
+    "total_videos",
+    "subscribers",
+    "status",
+    "email",
+  ];
+
+  const csv = json2csv.parse(creatorData, { fields });
+
+  res.setHeader(
+    "Content-disposition",
+    `attachment; filename=content_creators.csv`
+  );
+  res.set("Content-Type", "text/csv");
+
+  res.status(StatusCodes.OK).send(csv);
 };
 
 const addContentCreator = async (req, res) => {
-  const { name, email, password } = req.body;
-  const existingUser = await User.findOne({ where: { email } });
-
+  const { name, gender, mobile_number } = req.body;
+  //also add mobile after uncommenting in model
+  const existingUser = await User.findOne({ where: { name } });
+  console.log("i exist: ", existingUser);
   if (!existingUser) {
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-    });
+    throw new CustomError.NotFoundError("User Not Found. Create User First");
+  }
+  const contentCreator = await ContentCreator.create({
+    name,
+    user_id: existingUser.id,
+  });
 
-    const newUserId = newUser.id;
-    console.log("ID-----------------------------------:", newUserId);
-    const newContentCreator = ContentCreator.create({
-      newUserId,
-      name,
-    });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ contentCreator, msg: "Content Creator Added." });
+};
+
+const getSingleContentCreator = async (req, res) => {
+  const contentCreatorId = req.params.id;
+  console.log("req contentCreator", req.contentCreator);
+
+  const contentCreator = await ContentCreator.findByPk(contentCreatorId, {});
+
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError(
+      `No contentCreator with id ${contentCreatorId}`
+    );
   }
 
-  const newContentCreator = ContentCreator.create({
-    name,
+  //Uncomment after permissions set
+  // checkPermissions(req.contentCreator, contentCreator.id);
+
+  res.status(StatusCodes.OK).json({ contentCreator });
+};
+
+const deleteContentCreator = async (req, res) => {
+  const ContentCreatorIdToDelete = req.params.id;
+  console.log(ContentCreatorIdToDelete);
+
+  const ContentCreatorToDelete = await ContentCreator.findByPk(
+    ContentCreatorIdToDelete
+  );
+  if (!ContentCreatorToDelete) {
+    throw new CustomError.NotFoundError(
+      `No Content Creator with id ${ContentCreatorIdToDelete}`
+    );
+  }
+
+  // Delete the ContentCreator
+  await ContentCreatorToDelete.destroy();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Content Creator Deleted Successfully." });
+};
+
+const listVideosByContentCreator = async (req, res) => {
+  const { id: userId } = req.params;
+
+  const contentCreator = await ContentCreator.findOne({
+    where: { id: userId },
+    include: [
+      {
+        association: "channels",
+        attributes: ["id", "name", "content_creator_id"],
+        include: [
+          {
+            association: "videos",
+            attributes: ["id", "name", "views"],
+          },
+        ],
+      },
+    ],
   });
+
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError("Content creator not found.");
+  }
+
+  const videos = [];
+  contentCreator.channels.forEach((channel) => {
+    channel.videos.forEach((video) => {
+      videos.push({
+        id: video.id,
+        name: video.name,
+        views: video.views,
+      });
+    });
+  });
+
+  const videosCount = videos.length;
+
+  res.status(StatusCodes.OK).json({ videos, videosCount });
 };
 
 const updateTermsAndConditions = async (req, res) => {
@@ -357,7 +490,6 @@ const getAllContent = async (req, res) => {
 const getSubCategory = async (req, res) => {
   const subCategory = await SubCategory.findAll({});
   const subCategoryCount = subCategory.length;
-  console.log("Length: ", subCategoryCount);
 
   res.status(StatusCodes.OK).json({ subCategory, count: subCategoryCount });
 };
@@ -419,44 +551,6 @@ const getSingleCategory = async (req, res) => {
   // checkPermissions(req.category, category.id);
 
   res.status(StatusCodes.OK).json({ category });
-};
-
-const getSingleContentCreator = async (req, res) => {
-  const contentCreatorId = req.params.id;
-  console.log("req contentCreator", req.contentCreator);
-
-  const contentCreator = await ContentCreator.findByPk(contentCreatorId, {});
-
-  if (!contentCreator) {
-    throw new CustomError.NotFoundError(
-      `No contentCreator with id ${contentCreatorId}`
-    );
-  }
-
-  //Uncomment after permissions set
-  // checkPermissions(req.contentCreator, contentCreator.id);
-
-  res.status(StatusCodes.OK).json({ contentCreator });
-};
-
-const deleteContentCreator = async (req, res) => {
-  const ContentCreatorIdToDelete = req.params.id;
-  console.log(ContentCreatorIdToDelete);
-
-  const ContentCreatorToDelete = await ContentCreator.findByPk(
-    ContentCreatorIdToDelete
-  );
-  if (!ContentCreatorToDelete) {
-    throw new CustomError.NotFoundError(
-      `No Content Creator with id ${ContentCreatorIdToDelete}`
-    );
-  }
-
-  // Delete the ContentCreator
-  await ContentCreatorToDelete.destroy();
-  const ContentCreator = await res
-    .status(StatusCodes.OK)
-    .json({ msg: "Content Creator Deleted Successfully!" });
 };
 
 const editContentCreatorTable = async (req, res) => {
@@ -538,7 +632,7 @@ const changeChannelActiveStatus = async (req, res) => {
 const getAllChannels = async (req, res) => {
   const channels = await Channel.findAll({
     raw: true,
-    attributes: ["id", "name", "content_creator_id"],
+    attributes: ["id", "name", "content_creator_id", "createdAt"],
   });
 
   if (!channels || channels.length === 0) {
@@ -663,7 +757,22 @@ const getAllVideos = async (req, res) => {
   res.status(StatusCodes.OK).json({ videos, videosCount });
 };
 
-const getAllCategoryAndSubCategory = async (req, res, next) => {
+const getAllCategories = async (req, res, next) => {
+  const categories = await Category.findAll({
+    raw: true,
+    attributes: ["name"],
+  });
+
+  if (!categories || categories.length === 0) {
+    throw new CustomError.NotFoundError(`No Categories found!!`);
+  }
+
+  const categoriesCount = categories.length;
+
+  res.status(StatusCodes.OK).json({ categories, categoriesCount });
+};
+
+const getAllCategoryAndSubCategory = async (req, res) => {
   const categories = await Category.findAll({
     raw: true,
     attributes: ["id", "name"],
@@ -687,6 +796,55 @@ const getAllCategoryAndSubCategory = async (req, res, next) => {
   });
 
   res.status(StatusCodes.OK).json({ categories: categoriesWithSubcategories });
+};
+
+const getAllCategoryAndSubCategoryCsv = async (req, res) => {
+  const categories = await Category.findAll({
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  if (!categories || categories.length === 0) {
+    throw new CustomError.NotFoundError(`No Categories found!!`);
+  }
+
+  const subcategories = await SubCategory.findAll({
+    raw: true,
+    attributes: ["id", "name", "category_id", "desc"],
+  });
+
+  const csvData = [];
+  categories.forEach((category) => {
+    subcategories
+      .filter((subcategory) => subcategory.category_id === category.id)
+      .forEach((subcategory) => {
+        csvData.push({
+          "Category ID": category.id,
+          "Category Name": category.name,
+          "Subcategory ID": subcategory.id,
+          "Subcategory Name": subcategory.name,
+          Description: subcategory.desc,
+        });
+      });
+  });
+
+  const fields = [
+    "Category ID",
+    "Category Name",
+    "Subcategory ID",
+    "Subcategory Name",
+    "Description",
+  ];
+
+  const csv = json2csv.parse(csvData, { fields });
+
+  res.setHeader(
+    "Content-disposition",
+    `attachment; filename=categories_and_subcategories.csv`
+  );
+  res.set("Content-Type", "text/csv");
+
+  res.status(200).send(csv);
 };
 
 const GetContentApproval = async (req, res, next) => {
@@ -811,12 +969,13 @@ module.exports = {
   deleteUser,
   changeActiveStatus,
   editUserTable,
-  exportCsv,
+  UserExportCsv,
   addNewUser,
   addNewCoupon,
   getAllCoupons,
   addCategory,
   addSubCategory,
+  getAllCategories,
   addContentCreator,
   updateTermsAndConditions,
   updatePrivacyPolicy,
@@ -829,6 +988,7 @@ module.exports = {
   getSingleCategory,
   getSingleContentCreator,
   deleteContentCreator,
+  listVideosByContentCreator,
   editContentCreatorTable,
   changeContentCreatorActiveStatus,
   changeChannelActiveStatus,
@@ -836,7 +996,9 @@ module.exports = {
   getSingleChannel,
   getAllVideos,
   getAllCategoryAndSubCategory,
+  getAllCategoryAndSubCategoryCsv,
   GetContentApproval,
   rejectContent,
+  getAllContentCreatorCsv,
   acceptContent,
 };

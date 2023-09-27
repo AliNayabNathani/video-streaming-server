@@ -10,6 +10,10 @@ const {
   createNewChannel,
   getSupport,
   updateSupport,
+  deleteChannel,
+  addNewEpisodeToVideo,
+  addNewTrailerToVideo,
+  deleteEpisode,
 } = require("../controllers/contentCreatorController");
 const router = express.Router();
 
@@ -21,8 +25,15 @@ router.route("/mychannel/add").post(createNewChannel);
 
 router.route("/get-support").get(getSupport).patch(updateSupport);
 
+router
+  .route("/mychannel/:id")
+  .get(getSingleChannelDetail)
+  .delete(deleteChannel);
+
 router.route("/myvideo/:id").get(getSingleMyVideo).put(changeVideoStatus);
-router.route("/mychannel/:id").get(getSingleChannelDetail);
+router.route("/add-episode/:id").post(addNewEpisodeToVideo);
+router.route("/episodes/:id").delete(deleteEpisode);
+router.route("/add-trailer/:id").post(addNewTrailerToVideo);
 router.route("/feedback/:id").post(submitFeedback);
 
 module.exports = router;

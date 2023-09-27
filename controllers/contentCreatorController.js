@@ -147,6 +147,60 @@ const addNewVideo = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ video, trailer, episodes });
 };
 
+const addNewEpisodeToVideo = async (req, res) => {
+  console.log("HERE");
+  const { id: videoId } = req.params;
+  // console.log(videoId);
+  const { title, file, poster, description } = req.body;
+
+  const video = await Video.findByPk(videoId);
+  console.log("videoId im here", video.id);
+  const episode = await Episode.create({
+    title,
+    file,
+    poster: poster || null,
+    description: description || null,
+    videoId: video.id,
+  });
+
+  res.status(StatusCodes.CREATED).json({ episode });
+};
+
+const deleteEpisode = async (req, res) => {
+  const { id: episodeId } = req.params;
+
+  if (!episodeId) {
+    throw new CustomError.BadRequestError(
+      "Episode ID is required for deletion."
+    );
+  }
+
+  const episode = await Episode.findByPk(episodeId);
+
+  if (!episode) {
+    throw new CustomError.NotFoundError("Episode not found.");
+  }
+  await episode.destroy();
+
+  res.status(StatusCodes.OK).json({ msg: "Episode deleted successfully." });
+};
+
+const addNewTrailerToVideo = async (req, res) => {
+  const { id: videoId } = req.params;
+  const { title, file, poster } = req.body;
+
+  const video = await Video.findByPk(videoId);
+  // console.log("videoId im here", video.id);
+  const trailer = await Trailer.create({
+    title,
+    file,
+    poster: poster || null,
+    videoId: video.id,
+  });
+
+  res.status(StatusCodes.CREATED).json({ trailer });
+};
+
 const getMyChannels = async (req, res) => {
   const userId = "2";
   const contentCreator = await ContentCreator.findOne({
@@ -278,6 +332,26 @@ const createNewChannelWithEpisodes = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ channel });
 };
 
+const deleteChannel = async (req, res) => {
+  const { id: channelId } = req.params;
+
+  if (!channelId) {
+    throw new CustomError.BadRequestError(
+      "Channel ID is required for deletion."
+    );
+  }
+
+  const channel = await Channel.findByPk(channelId);
+
+  if (!channel) {
+    throw new CustomError.NotFoundError("Channel not found.");
+  }
+
+  await channel.destroy();
+
+  res.status(StatusCodes.OK).json({ msg: "Channel deleted successfully." });
+};
+
 // const createNewChannelWithEpisodes = async (req, res) => {
 //     const { name, episodes } = req.body;
 //     const content_creator_id = 4;
@@ -369,4 +443,8 @@ module.exports = {
   createNewChannel,
   getSupport,
   updateSupport,
+  deleteChannel,
+  addNewEpisodeToVideo,
+  addNewTrailerToVideo,
+  deleteEpisode,
 };

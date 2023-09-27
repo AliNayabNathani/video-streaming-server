@@ -6,7 +6,7 @@ const {
   deleteUser,
   changeActiveStatus,
   editUserTable,
-  exportCsv,
+  UserExportCsv,
   addNewUser,
   addNewCoupon,
   getAllCoupons,
@@ -34,14 +34,18 @@ const {
   GetContentApproval,
   rejectContent,
   acceptContent,
+  listVideosByContentCreator,
+  getAllCategories,
+  getAllCategoryAndSubCategoryCsv,
+  getAllContentCreatorCsv,
 } = require("../controllers/adminController");
 const { authorizePermission } = require("../middleware/authentication");
 
 //get All Users
 router.route("/").get(getAllUsers);
 
-//export csv
-router.route("/export-users-csv").get(exportCsv);
+//export user csv
+router.route("/export-users-csv").get(UserExportCsv);
 
 //Add New User
 router.route("/add-new-user").post(addNewUser);
@@ -53,10 +57,13 @@ router.route("/add-new-coupon").post(addNewCoupon);
 router.route("/get-coupons").get(getAllCoupons);
 
 //Add Content Creators
-// router.route("/add-content-creator").post(addContentCreator);
+router.route("/add-content-creator").post(addContentCreator);
 
 //Get Content Creators
-// router.route("/get-content-creator").get(getAllContentCreator);
+router.route("/get-content-creator").get(getAllContentCreator);
+
+//Get Content Creators
+router.route("/content-creator-csv").get(getAllContentCreatorCsv);
 
 //Add Category
 router.route("/add-category").post(addCategory);
@@ -70,8 +77,11 @@ router.route("/terms-and-conditions").put(updateTermsAndConditions);
 router.route("/privacy-policy").put(updatePrivacyPolicy);
 router.route("/about-us").put(updateAboutUs);
 
-//Get all categories
-router.route("/get-all-categories").get(getSubCategory);
+//Get all sub-categories
+router.route("/get-all-category").get(getAllCategories);
+
+//Get all sub-categories
+router.route("/get-all-subcategory").get(getSubCategory);
 
 //Get All Channels
 router.route("/channels").get(getAllChannels);
@@ -85,6 +95,9 @@ router.route("/videos").get(getAllVideos);
 //Get All Cat and Sub Cat
 router.route("/category-management").get(getAllCategoryAndSubCategory);
 
+//Download Csv
+router.route("/category-export").get(getAllCategoryAndSubCategoryCsv);
+
 //Get All Channels
 router.route("/channel/:id").get(getSingleChannel);
 
@@ -93,6 +106,9 @@ router
   .route("/contentcreator/:id")
   .get(getSingleContentCreator)
   .delete(deleteContentCreator);
+
+//Get Content Creator Detail Screen
+router.route("/contentcreatordetail/:id").get(listVideosByContentCreator);
 
 //Edit ContentCreator info
 router.route("/contentcreator/:id/edit").put(editContentCreatorTable);
