@@ -10,4 +10,4 @@ const checkModulePermissions = (requestUser, resourceUserId) => {
   );
 };
 
-module.exports = checkPermissions;
+module.exports = checkModulePermissions;
