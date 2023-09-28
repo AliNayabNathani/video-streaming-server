@@ -5,10 +5,19 @@ const {
   uploadVideo,
   uploadVideoPoster,
 } = require("../controllers/otherController");
+const {
+  authenticateUser,
+  authorizePermission,
+} = require("../middleware/authentication");
 const router = express.Router();
 
-router.route("/videos/:videoId/comments").post(postComment).get(getComments);
-router.route("/uploadVideo").post(uploadVideo);
+router
+  .route("/videos/:videoId/comments")
+  .post(authenticateUser, postComment)
+  .get(getComments);
+router
+  .route("/uploadVideo")
+  .post(authenticateUser, authorizePermission(""), uploadVideo);
 router.route("/uploadPicture").post(uploadVideoPoster);
 
 module.exports = router;
