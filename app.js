@@ -51,7 +51,7 @@ app.use(express.json());
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
-app.use(auth(config));
+// app.use(auth(config));
 //routes
 
 app.get("/", (req, res) => {

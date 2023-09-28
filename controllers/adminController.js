@@ -94,7 +94,7 @@ const changeActiveStatus = async (req, res) => {
     );
   }
 
-  checkPermissions(requestUser, userToChange.id);
+  // checkPermissions(requestUser, userToChange.id);
 
   userToChange.status =
     userToChange.status === "Active" ? "InActive" : "Active";
@@ -134,7 +134,7 @@ const editUserTable = async (req, res) => {
 
 const exportCsv = async (req, res) => {
   const { user: requestUser } = req;
-  checkPermissions(requestUser);
+  // checkPermissions(requestUser);
 
   const users = await User.findAll({
     attributes: { exclude: ["password"] },
@@ -234,9 +234,12 @@ const addSubCategory = async (req, res) => {
   if (!categoryId) {
     throw new CustomError.NotFoundError("Category doesn't exist");
   }
-  const existingSubCategory = await SubCategory.findOne({ where: { name } });
+  const existingSubCategory = await SubCategory.findOne({
+    where: { name, category_id },
+  });
+
   if (existingSubCategory) {
-    throw new CustomError.BadRequestError("Category already exist");
+    throw new CustomError.BadRequestError("Sub Category already exist");
   }
   const newSubCategory = await SubCategory.create({
     name,
@@ -527,7 +530,7 @@ const changeChannelActiveStatus = async (req, res) => {
   // checkPermissions(requestUser, userToChange.id);
 
   channelToChange.status =
-    channelToChange.status === "Active" ? "Inactive" : "Active";
+    channelToChange.status === "Active" ? "InActive" : "Active";
   await channelToChange.save();
 
   res
@@ -758,7 +761,7 @@ const GetContentApproval = async (req, res, next) => {
 
 const rejectContent = async (req, res) => {
   const contentId = req.params.id;
-  const user_admin = req.user;
+  // const user_admin = req.user;
 
   const content = await Video.findByPk(contentId);
 
@@ -769,7 +772,7 @@ const rejectContent = async (req, res) => {
   // checkPermissions(user_admin, content.user_id);
 
   const contentapproval = await ContentApproval.create({
-    user_id: user_admin.id,
+    user_id: 1,
     video_id: contentId,
     status: "Reject",
   });
