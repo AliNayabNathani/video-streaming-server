@@ -26,14 +26,6 @@ const getAllUsers = async (req, res) => {
   });
   const userCount = users.length;
 
-  // for (const user of users) {
-  //   const role = await Role.findByPk(user.role_id);
-  //   const isAssociated = role !== null;
-
-  //   console.log(`User ${user.name}'s Role ID: ${user.role_id}`);
-  //   console.log(`Is Role ID Associated with a Role: ${isAssociated}`);
-  // }
-
   res.status(StatusCodes.OK).json({ users, count: userCount });
 };
 

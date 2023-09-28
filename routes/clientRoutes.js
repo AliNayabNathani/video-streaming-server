@@ -11,25 +11,32 @@ const {
   getChangeTitles,
   updateChangeTitles,
 } = require("../controllers/clientController");
+const { authenticateUser } = require("../middleware/authentication");
 const router = express.Router();
 
-router.route("/get-overview").get(getOverview).patch(updateOverview);
+router
+  .route("/get-overview")
+  .get(authenticateUser, getOverview)
+  .patch(updateOverview);
 
 router
   .route("/get-account")
-  .get(getAllAcountContent)
+  .get(authenticateUser, getAllAcountContent)
   .patch(updateAllAccountContent);
 
-router.route("/get-banking").get(getBankAndTaxInfo).patch(updateBankAndTaxInfo);
+router
+  .route("/get-banking")
+  .get(authenticateUser, getBankAndTaxInfo)
+  .patch(updateBankAndTaxInfo);
 
 router
   .route("/get-titlesubmission")
-  .get(getTitleSubmission)
+  .get(authenticateUser, getTitleSubmission)
   .patch(updateTitleSubmission);
 
 router
   .route("/get-changetitles")
-  .get(getChangeTitles)
+  .get(authenticateUser, getChangeTitles)
   .patch(updateChangeTitles);
 
 module.exports = router;

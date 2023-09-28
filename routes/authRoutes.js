@@ -7,6 +7,7 @@ const {
   updateProfile,
   logout,
 } = require("../controllers/authController");
+const { authorizePermission } = require("../middleware/authentication");
 
 //To Register a new User
 router.route("/register").post(register);
@@ -18,10 +19,10 @@ router.route("/login").post(login);
 router.route("/logout").get(logout);
 
 //UpdatePassword
-router.route("/changepassword").patch(updatePassword);
+router.route("/changepassword").patch(authorizePermission, updatePassword);
 
 //UpdatePassword
-router.route("/updateprofile").patch(updateProfile);
+router.route("/updateprofile").patch(authorizePermission, updateProfile);
 
 //Logout
 // router.route("/logout").get(logout);
