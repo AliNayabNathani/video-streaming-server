@@ -15,7 +15,6 @@ const register = async (req, res) => {
     name,
     email,
     password,
-
   });
 
   res
@@ -34,7 +33,7 @@ const login = async (req, res) => {
     where: { email },
     attributes: ["id", "name", "password"],
   });
-  console.log("user here", user);
+
   if (!user) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
@@ -45,10 +44,74 @@ const login = async (req, res) => {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
 
-  res.status(StatusCodes.OK).json({ msg: "Logged In" });
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+};
+
+const logout = async (req, res) => {
+  res.cookie("token", "logout", {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  });
+  res.status(StatusCodes.OK).json({ msg: "Logged Out." });
+};
+
+const updatePassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res
+      .status(400)
+      .json({ error: "Please provide both old and new passwords" });
+  }
+
+  // const user = await User.findByPk(req.user.id);
+  const user = await User.findByPk(11);
+
+  if (!user) {
+    throw new CustomError.NotFoundError("User not found");
+  }
+
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.BadRequestError("Invalid credentials");
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ message: "Password changed successfully" });
+};
+
+const updateProfile = async (req, res) => {
+  const { name, email, mobile_number } = req.body;
+  const userId = req.user.id;
+
+  const user = await User.findByPk(userId);
+  if (name) {
+    user.name = name;
+  }
+
+  if (email) {
+    user.email = email;
+  }
+
+  if (mobile_number) {
+    user.mobile_number = mobile_number;
+  }
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ message: "Profile updated successfully." });
 };
 
 module.exports = {
   login,
   register,
+  updatePassword,
+  updateProfile,
+  logout,
 };

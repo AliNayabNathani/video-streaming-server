@@ -49,7 +49,21 @@ const User = sequelize.define(
     },
   },
   {
-    tableName: "users",
+    tableName: 'users',
+    hooks: {
+      async beforeCreate(user, options) {
+        if (user.changed('password')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+      async beforeUpdate(user, options) {
+        if (user.changed('password')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+    },
   }
 );
 
@@ -63,20 +77,15 @@ User.hasOne(ContentCreator, {
   as: "contentCreator",
 });
 
-User.beforeCreate(async (user, options) => {
-  if (user.changed("password")) {
-    // console.log("Before hashing - user.password:", user.password);
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
-
-    // console.log("After hashing - user.password:", user.password);
-  }
-});
+// User.beforeCreate(async (user, options) => {
+//   if (user.changed("password")) {
+//     const salt = await bcrypt.genSalt(10);
+//     user.password = await bcrypt.hash(user.password, salt);
+//   }
+// });
 
 User.prototype.comparePassword = async function (candidatePassword) {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
-
   // console.log("Comparing passwords:");
   // console.log("candidatePassword:", candidatePassword);
   // console.log("this.password:", this.password);

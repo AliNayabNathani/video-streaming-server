@@ -24,9 +24,10 @@ const pusher = require("./config/pusher");
 //routers
 const authRouter = require("./routes/authRoutes");
 const adminRouter = require("./routes/adminRoutes");
-// const clientRouter = require("./routes/clientRoutes");
+const clientRouter = require("./routes/clientRoutes");
 const otherRouter = require("./routes/otherRoutes");
 const contentCreatorRouter = require("./routes/contentCreatorRoutes");
+const statsRouter = require("./routes/statsRoutes");
 
 //import middlewares
 const notFoundMiddleware = require("./middleware/not-found");
@@ -47,7 +48,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 
 //access to json data in req.body
 app.use(express.json());
-// app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser(process.env.JWT_SECRET));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
@@ -60,8 +61,9 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
+app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/creator", contentCreatorRouter);
-// app.use("/api/v1/client", clientRouter);
+app.use("/api/v1/client", clientRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
