@@ -14,6 +14,8 @@ const {
   addNewEpisodeToVideo,
   addNewTrailerToVideo,
   deleteEpisode,
+  getSingleEpisode,
+  getSingleTrailer,
 } = require("../controllers/contentCreatorController");
 const {
   authenticateUser,
@@ -43,14 +45,17 @@ router
 
 router
   .route("/myvideo/:id")
-  .get(getSingleMyVideo)
+  .get(authenticateUser, getSingleMyVideo)
   .put(authenticateUser, authorizePermission("1", "4"), changeVideoStatus);
+
+router.route("/trailer/:id").get(authenticateUser, getSingleTrailer);
 
 router
   .route("/add-episode/:id")
   .post(authenticateUser, authorizePermission("4"), addNewEpisodeToVideo);
 router
   .route("/episodes/:id")
+  .get(authenticateUser, getSingleEpisode)
   .delete(authenticateUser, authorizePermission("1", "4"), deleteEpisode);
 router
   .route("/add-trailer/:id")

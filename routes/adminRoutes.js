@@ -178,7 +178,11 @@ router
 //Edit ContentCreator info
 router
   .route("/contentcreator/:id/edit")
-  .put(authenticateUser, authorizePermission("1"), editContentCreatorTable);
+  .put(
+    authenticateUser,
+    authorizePermission("1", "3"),
+    editContentCreatorTable
+  );
 
 //change change status
 router

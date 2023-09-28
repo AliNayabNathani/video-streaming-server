@@ -41,7 +41,13 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 //   })
 // );
 // app.use(helmet());
-// app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+  })
+);
 // app.use(xss());
 
 // app.use(morgan('tiny'));

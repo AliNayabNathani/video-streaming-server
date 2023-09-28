@@ -16,6 +16,7 @@ const ContentApproval = require("../models/ContentApproval");
 const { Op } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const { uploadVideo, uploadVideoPoster } = require("./otherController");
+const recordView = require("../utils/recordViews");
 
 const MyVideos = async (req, res) => {
   const userId = "2";
@@ -63,7 +64,6 @@ const MyVideos = async (req, res) => {
 
 const getSingleMyVideo = async (req, res) => {
   const { id: videoId } = req.params;
-  // console.log(videoId);
 
   const video = await Video.findByPk(videoId, {
     include: [
@@ -75,6 +75,8 @@ const getSingleMyVideo = async (req, res) => {
   if (!video) {
     throw new CustomError.NotFoundError(`Video not found.`);
   }
+
+  recordView(req.user.userId, videoId);
 
   res.status(StatusCodes.OK).json({ video });
 };
@@ -432,6 +434,34 @@ const updateSupport = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Support data updated successfully." });
 };
+
+const getSingleEpisode = async (req, res) => {
+  const { id: episodeId } = req.params;
+
+  const episode = await Episode.findByPk(episodeId);
+  if (!episode) {
+    throw new CustomError.NotFoundError(`No Episode with id: ${episodeId}`);
+  }
+  const trailerId = 0;
+  await recordView(req.user.userId, episode.videoId, trailerId, episode.id);
+
+  res.status(StatusCodes.OK).json({ episode });
+};
+
+const getSingleTrailer = async (req, res) => {
+  const { id: trailerId } = req.params;
+  const trailer = await Trailer.findByPk(trailerId);
+
+  if (!trailer) {
+    throw new CustomError.NotFoundError(`No Trailer with id: ${trailerId}`);
+  }
+
+  const episodeId = 0;
+  await recordView(req.user.userId, trailer.videoId, trailer.id, episodeId);
+
+  res.status(StatusCodes.OK).json({ trailer });
+};
+
 module.exports = {
   MyVideos,
   getMyChannels,
@@ -447,4 +477,6 @@ module.exports = {
   addNewEpisodeToVideo,
   addNewTrailerToVideo,
   deleteEpisode,
+  getSingleEpisode,
+  getSingleTrailer,
 };

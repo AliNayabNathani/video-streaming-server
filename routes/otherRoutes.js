@@ -17,7 +17,7 @@ router
   .get(getComments);
 router
   .route("/uploadVideo")
-  .post(authenticateUser, authorizePermission(""), uploadVideo);
-router.route("/uploadPicture").post(uploadVideoPoster);
+  .post(authenticateUser, authorizePermission("4"), uploadVideo);
+router.route("/uploadPicture").post(authenticateUser, uploadVideoPoster);
 
 module.exports = router;

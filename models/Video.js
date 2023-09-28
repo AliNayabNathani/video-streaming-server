@@ -3,6 +3,7 @@ const sequelize = require("../config/sequelize");
 const Channel = require("./Channel");
 const Trailer = require("./Trailer");
 const Episode = require("./Episodes");
+const ViewsStats = require("./Stats");
 
 const Video = sequelize.define(
   "Video",
