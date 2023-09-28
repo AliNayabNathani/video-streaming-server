@@ -39,10 +39,13 @@ const {
   getAllCategoryAndSubCategoryCsv,
   getAllContentCreatorCsv,
 } = require("../controllers/adminController");
-const { authorizePermission } = require("../middleware/authentication");
+const {
+  authorizePermission,
+  authenticateUser,
+} = require("../middleware/authentication");
 
 //get All Users
-router.route("/").get(getAllUsers);
+router.route("/").get(authenticateUser, getAllUsers);
 
 //export user csv
 router.route("/export-users-csv").get(UserExportCsv);

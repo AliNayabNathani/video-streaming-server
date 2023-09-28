@@ -33,7 +33,7 @@ const login = async (req, res) => {
     where: { email },
     attributes: ["id", "name", "password"],
   });
-  console.log("user here", user);
+
   if (!user) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
@@ -44,7 +44,17 @@ const login = async (req, res) => {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
 
-  res.status(StatusCodes.OK).json({ msg: "Logged In" });
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+};
+
+const logout = async (req, res) => {
+  res.cookie("token", "logout", {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  });
+  res.status(StatusCodes.OK).json({ msg: "Logged Out." });
 };
 
 const updatePassword = async (req, res) => {
@@ -103,4 +113,5 @@ module.exports = {
   register,
   updatePassword,
   updateProfile,
+  logout,
 };

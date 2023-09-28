@@ -5,6 +5,7 @@ const {
   register,
   updatePassword,
   updateProfile,
+  logout,
 } = require("../controllers/authController");
 
 //To Register a new User
@@ -12,6 +13,9 @@ router.route("/register").post(register);
 
 //Login
 router.route("/login").post(login);
+
+//To logout User
+router.route("/logout").get(logout);
 
 //UpdatePassword
 router.route("/changepassword").patch(updatePassword);
