@@ -61,6 +61,18 @@ const Video = sequelize.define(
       type: DataTypes.ENUM("Active", "Inactive"),
       defaultValue: "Active",
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal(
+        "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      ),
+    },
   },
   {
     tableName: "video",
