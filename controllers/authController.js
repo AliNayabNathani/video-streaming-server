@@ -4,8 +4,7 @@ const CustomError = require("../errors");
 const { attachCookiesToResponse, createTokenUser } = require("../utils");
 
 const register = async (req, res) => {
-  const { email, name, password } = req.body;
-
+  const { email, name, password, role_id } = req.body;
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new CustomError.BadRequestError("Email already exists");
@@ -15,6 +14,7 @@ const register = async (req, res) => {
     name,
     email,
     password,
+    role_id
   });
 
   res
@@ -31,7 +31,7 @@ const login = async (req, res) => {
 
   const user = await User.findOne({
     where: { email },
-    attributes: ["id", "name", "password", "role_id"],
+    attributes: ["id", "name", "password", "email", "role_id"],
   });
 
   if (!user) {

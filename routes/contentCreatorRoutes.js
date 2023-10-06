@@ -8,6 +8,7 @@ const {
   submitFeedback,
   getSingleChannelDetail,
   createNewChannel,
+  createNewChannelWithEpisodes,
   getSupport,
   updateSupport,
   deleteChannel,
@@ -29,7 +30,7 @@ router
 router.route("/mychannels").get(authenticateUser, getMyChannels);
 router
   .route("/mychannel/add")
-  .post(authenticateUser, authorizePermission("4"), createNewChannel);
+  .post(authenticateUser, authorizePermission("2"), createNewChannelWithEpisodes);
 
 router
   .route("/get-support")
@@ -39,7 +40,7 @@ router
 router
   .route("/mychannel/:id")
   .get(getSingleChannelDetail)
-  .delete(authenticateUser, authorizePermission("4"), deleteChannel);
+  .delete(authenticateUser, authorizePermission("2"), deleteChannel);
 
 router
   .route("/myvideo/:id")
@@ -48,7 +49,7 @@ router
 
 router
   .route("/add-episode/:id")
-  .post(authenticateUser, authorizePermission("4"), addNewEpisodeToVideo);
+  .post(authenticateUser, authorizePermission("2"), addNewEpisodeToVideo);
 router
   .route("/episodes/:id")
   .delete(authenticateUser, authorizePermission("1", "4"), deleteEpisode);

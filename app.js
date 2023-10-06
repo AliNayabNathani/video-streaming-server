@@ -41,23 +41,29 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 //   })
 // );
 // app.use(helmet());
-// app.use(cors());
-// app.use(xss());
+app.use(
+  cors({
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+  })
+);
 
+// app.use(xss());
 // app.use(morgan('tiny'));
 
 //access to json data in req.body
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser('jwtSecret'));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
 // app.use(auth(config));
 //routes
 
-app.get("/", (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
-});
+// app.get("/", (req, res) => {
+//   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
+// });
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);

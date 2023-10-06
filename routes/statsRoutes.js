@@ -14,6 +14,7 @@ const router = express.Router();
 router
   .route("/getuserbymonth")
   .get(authenticateUser, getUsersRegisteredByMonth);
+
 router
   .route("/getcreatorsbymonth")
   .get(authenticateUser, getCreatorsRegisteredByMonth);

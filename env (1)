@@ -1,4 +1,0 @@
-DB_PASSWORD=inspedium
-AUTH0_SECRET=auth0secret
-JWT_SECRET=jwtSecret
-JWT_LIFETIME=30d

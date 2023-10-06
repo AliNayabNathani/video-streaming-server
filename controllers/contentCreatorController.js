@@ -7,7 +7,6 @@ const Episode = require("../models/Episodes");
 const Channel = require("../models/Channel");
 const Support = require("../models/Support");
 const json2csv = require("json2csv");
-const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const { STATUS_CODES } = require("http");
@@ -202,7 +201,7 @@ const addNewTrailerToVideo = async (req, res) => {
 };
 
 const getMyChannels = async (req, res) => {
-  const userId = "2";
+  const userId = req.user.userId;
   const contentCreator = await ContentCreator.findOne({
     where: {
       user_id: userId,
@@ -303,17 +302,21 @@ const createNewChannel = async (req, res) => {
 
 const createNewChannelWithEpisodes = async (req, res) => {
   const { name, episodes } = req.body;
-  const content_creator_id = 4;
+  const userId = req.user.userId;
+  const contentCreator = await ContentCreator.findOne({
+    where: {
+      user_id: userId,
+    },
 
-  if (!name || !content_creator_id) {
-    throw new CustomError.BadRequestError(
-      "Name and content_creator_id are required for creating a channel"
-    );
+  });
+  console.log(contentCreator)
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError("Not Found.")
   }
 
   const channel = await Channel.create({
     name,
-    content_creator_id,
+    content_creator_id: contentCreator.id,
   });
 
   if (Array.isArray(episodes) && episodes.length > 0) {
@@ -447,4 +450,5 @@ module.exports = {
   addNewEpisodeToVideo,
   addNewTrailerToVideo,
   deleteEpisode,
+  createNewChannelWithEpisodes
 };

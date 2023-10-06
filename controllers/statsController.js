@@ -240,22 +240,22 @@ const calculateTotalViewsForUser = async (userId, interval) => {
       dateFormat = "%Y-%m-%d";
       break;
     case "weekly":
-      startDate = moment(currentDate).subtract(7, "weeks");
+      startDate = moment(currentDate).subtract(20, "weeks");
       groupBy = [moment(currentDate).format("YYYY [W]WW")];
       dateFormat = "%Y [W]WW";
       break;
     case "monthly":
-      startDate = moment(currentDate).subtract(7, "months");
+      startDate = moment(currentDate).subtract(20, "months");
       groupBy = [moment(currentDate).format("YYYY-MM")];
       dateFormat = "%Y-%m";
       break;
     case "yearly":
-      startDate = moment(currentDate).subtract(7, "years");
+      startDate = moment(currentDate).subtract(20, "years");
       groupBy = [moment(currentDate).format("YYYY")];
       dateFormat = "%Y";
       break;
     default:
-      startDate = moment(currentDate).subtract(7, "days");
+      startDate = moment(currentDate).subtract(20, "days");
       groupBy = [moment(currentDate).format("YYYY-MM-DD")];
       dateFormat = "%Y-%m-%d";
   }
@@ -305,16 +305,20 @@ const calculateTotalViewsForUser = async (userId, interval) => {
     order: [["date", "ASC"]],
   });
 
+  console.log('Data: ', videos);
+
   return videos;
 };
 
 const getViewsGraph = async (req, res) => {
-  const userId = 2;
+  const userId = req.user.userId;
+
   const intervals = ["daily", "weekly", "monthly", "yearly"];
   const viewsByInterval = {};
 
   for (const interval of intervals) {
     const viewsData = await calculateTotalViewsForUser(userId, interval);
+    console.log(viewsData);
     viewsByInterval[interval] = viewsData;
   }
 

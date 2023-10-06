@@ -8,7 +8,6 @@ const SubCategory = require("../models/SubCategory");
 const ContentManagement = require("../models/ContentManagement");
 const json2csv = require("json2csv");
 // const json2csv = require("json2csv").Parser;
-const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const {

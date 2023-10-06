@@ -3,7 +3,6 @@ const CustomError = require("../errors");
 const Comment = require("../models/Comment");
 const User = require("../models/User");
 const pusher = require("../config/pusher");
-const fs = require("fs");
 const path = require("path");
 
 //uncomment after u add auth
@@ -97,7 +96,7 @@ const uploadVideo = async (req, res) => {
   }
 
   //Max Size = 10MB
-  const maxSize = 10 * 1024 * 1024;
+  const maxSize = 20 * 1024 * 1024;
   if (videoFile.size > maxSize) {
     throw new CustomError.BadRequestError("Max Video Size Should be 10MB");
   }
