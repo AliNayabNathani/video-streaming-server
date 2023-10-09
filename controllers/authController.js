@@ -31,7 +31,7 @@ const login = async (req, res) => {
 
   const user = await User.findOne({
     where: { email },
-    attributes: ["id", "name", "password", "role_id"],
+    attributes: ["id", "name", "password", "email", "role_id"],
   });
 
   if (!user) {
