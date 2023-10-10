@@ -10,7 +10,6 @@ const json2csv = require("json2csv");
 const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
-const { STATUS_CODES } = require("http");
 const Video = require("../models/Video");
 const ContentApproval = require("../models/ContentApproval");
 const { Op } = require("sequelize");
@@ -19,7 +18,7 @@ const { uploadVideo, uploadVideoPoster } = require("./otherController");
 const recordView = require("../utils/recordViews");
 
 const MyVideos = async (req, res) => {
-  const userId = "2";
+  const userId = req.user.userId;
 
   const contentCreator = await ContentCreator.findOne({
     where: {
@@ -204,7 +203,7 @@ const addNewTrailerToVideo = async (req, res) => {
 };
 
 const getMyChannels = async (req, res) => {
-  const userId = "2";
+  const userId = req.user.userId;
   const contentCreator = await ContentCreator.findOne({
     where: {
       user_id: userId,
@@ -286,7 +285,17 @@ const getSingleChannelDetail = async (req, res) => {
 
 const createNewChannel = async (req, res) => {
   const { name } = req.body;
-  const content_creator_id = 4;
+  const content_creator_id = req.user.userId;
+  const contentCreator = await ContentCreator.findOne({
+    where: {
+      user_id: content_creator_id,
+    },
+  });
+
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError(`User is not a content creator.`);
+  }
+  const contentCreatorId = contentCreator.id;
   // const content_creator_id = req.user.id;
 
   if (!name || !content_creator_id) {
@@ -297,7 +306,7 @@ const createNewChannel = async (req, res) => {
 
   const channel = await Channel.create({
     name,
-    content_creator_id,
+    contentCreatorId,
   });
 
   res.status(StatusCodes.CREATED).json({ channel });
@@ -460,6 +469,27 @@ const getSingleTrailer = async (req, res) => {
   await recordView(req.user.userId, trailer.videoId, trailer.id, episodeId);
 
   res.status(StatusCodes.OK).json({ trailer });
+};
+
+const setUpPayee = async (req, res) => {
+  const { country } = req.body;
+
+  res.status(StatusCodes.OK);
+};
+
+const companyProfileAccount = async (req, res) => {
+  const {
+    country,
+    company_name,
+    company_email,
+    postal_code,
+    phone_number,
+    city,
+    address_line1,
+    state_province,
+  } = req.body;
+
+  res.status(StatusCodes.OK);
 };
 
 module.exports = {

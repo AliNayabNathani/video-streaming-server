@@ -5,42 +5,21 @@ const User = require("../models/User");
 const pusher = require("../config/pusher");
 const fs = require("fs");
 const path = require("path");
+const OTPModel = require("../models/OTP");
+const nodemailer = require("nodemailer");
 
 //uncomment after u add auth
-// const postComment = async (req, res) => {
-//   const { text } = req.body;
-
-//   if (!text) {
-//     throw new CustomError.BadRequestError(
-//       "Please provide text for the comment"
-//     );
-//   }
-
-//   const userId = req.oidc.user.id;
-//   const videoId = req.params.videoId;
-
-//   const newComment = await Comment.create({
-//     text,
-//     userId,
-//     videoId,
-//   });
-
-//   pusher.trigger("comments", "new-comment", newComment);
-
-//   res
-//     .status(StatusCodes.CREATED)
-//     .json({ msg: "Comment added successfully!", comment: newComment });
-// };
-
 const postComment = async (req, res) => {
-  const { text, userId } = req.body;
-  const { videoId } = req.params;
+  const { text } = req.body;
 
-  if (!text || !videoId) {
-    throw new CustomError.BadRequestError(`Please provide text and videoId`);
+  if (!text) {
+    throw new CustomError.BadRequestError(
+      "Please provide text for the comment"
+    );
   }
 
-  //   const userId = req.oidc?.user?.sub || "defaultUserId";
+  const userId = req.user.userId;
+  const videoId = req.params.videoId;
 
   const newComment = await Comment.create({
     text,
@@ -142,4 +121,56 @@ const uploadVideoPoster = async (req, res) => {
     .send({ image: { src: `/uploads/${videoPoster.name}` } });
 };
 
-module.exports = { postComment, getComments, uploadVideo, uploadVideoPoster };
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.TEST_EMAIL_USER,
+    pass: process.env.TEST_EMAIL_PASSWORD,
+  },
+});
+
+const otpController = {
+  generateOTP: async (req, res, next) => {
+    const { email } = req.body;
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    try {
+      const otpRecord = await OTPModel.create({ email, otp });
+
+      transporter.sendMail({
+        from: process.env.TEST_EMAIL_USER,
+        to: email,
+        subject: "OTP Verification",
+        text: `Your OTP is: ${otp}`,
+      });
+
+      res.json({ success: true, message: "OTP sent successfully", otpRecord });
+    } catch (error) {
+      next(createError(500, "Internal server error"));
+    }
+  },
+
+  verifyOTP: async (req, res, next) => {
+    const { email, otp } = req.body;
+
+    try {
+      const otpRecord = await OTPModel.findOne({ where: { email, otp } });
+
+      if (otpRecord) {
+        res.json({ success: true, message: "OTP verification successful" });
+      } else {
+        res.json({ success: false, message: "Invalid OTP" });
+      }
+    } catch (error) {
+      next(createError(500, "Internal server error"));
+    }
+  },
+};
+
+module.exports = {
+  postComment,
+  getComments,
+  uploadVideo,
+  uploadVideoPoster,
+  otpController,
+};

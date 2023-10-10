@@ -4,6 +4,7 @@ const {
   getComments,
   uploadVideo,
   uploadVideoPoster,
+  otpController,
 } = require("../controllers/otherController");
 const {
   authenticateUser,
@@ -15,9 +16,17 @@ router
   .route("/videos/:videoId/comments")
   .post(authenticateUser, postComment)
   .get(getComments);
+
 router
   .route("/uploadVideo")
   .post(authenticateUser, authorizePermission("4"), uploadVideo);
+
 router.route("/uploadPicture").post(authenticateUser, uploadVideoPoster);
+
+// Generate OTP and store it in the database
+router.post("/generate-otp", otpController.generateOTP);
+
+// Verify OTP
+router.post("/verify-otp", otpController.verifyOTP);
 
 module.exports = router;
