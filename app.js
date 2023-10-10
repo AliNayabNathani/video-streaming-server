@@ -58,12 +58,9 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
-app.use(auth(config));
-//routes
+// app.use(auth(config));
 
-app.get("/", (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
-});
+//routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
