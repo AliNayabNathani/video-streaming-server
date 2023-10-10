@@ -20,6 +20,7 @@ const attachCookiesToResponse = ({ res, user }) => {
     expires: new Date(Date.now() + oneDay),
     secure: true,
     signed: true,
+    sameSite: "None",
   });
 };
 
