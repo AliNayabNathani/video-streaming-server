@@ -249,7 +249,7 @@ const getAllContentCreator = async (req, res) => {
         // attributes: ["gender"],
       });
 
-      console.log("user here", user);
+      const genderValue = user ? user.gender : "-";
 
       return {
         id: creator.id,
@@ -257,7 +257,7 @@ const getAllContentCreator = async (req, res) => {
         total_videos: creator.total_videos,
         subscribers: creator.subscribers,
         status: creator.status,
-        gender: user ? user.gender : "Not Specified",
+        gender: genderValue,
       };
     })
   );
