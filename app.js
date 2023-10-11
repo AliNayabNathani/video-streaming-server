@@ -9,9 +9,9 @@ const app = express();
 // const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
-// const rateLimiter = require("express-rate-limit");
-// const helmet = require("helmet");
-// const xss = require("xss-clean");
+const rateLimiter = require("express-rate-limit");
+const helmet = require("helmet");
+const xss = require("xss-clean");
 const cors = require("cors");
 const { auth } = require("express-openid-connect");
 const config = require("./config/auth0");
@@ -33,14 +33,22 @@ const statsRouter = require("./routes/statsRoutes");
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 
-// app.set("trust proxy", 1);
-// app.use(
-//   rateLimiter({
-//     windowMs: 15 * 60 * 1000,
-//     max: 60,
-//   })
-// );
-// app.use(helmet());
+app.set("trust proxy", 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+  })
+);
+app.use(helmet());
+
+// Logging middleware
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.url);
+  console.log("Request headers:", req.headers);
+  next();
+});
+
 app.use(
   cors({
     credentials: true,
@@ -52,7 +60,7 @@ app.use(
     ],
   })
 );
-// app.use(xss());
+app.use(xss());
 
 // app.use(morgan('tiny'));
 
