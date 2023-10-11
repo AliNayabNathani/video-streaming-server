@@ -249,7 +249,7 @@ const getAllContentCreator = async (req, res) => {
         // attributes: ["gender"],
       });
 
-      const genderValue = user ? user.gender : "-";
+      const genderValue = user && user.gender ? user.gender : "Not Specified";
 
       return {
         id: creator.id,
