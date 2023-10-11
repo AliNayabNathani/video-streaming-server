@@ -49,7 +49,6 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "https://video-streaming-6jkz.vercel.app",
-      "*",
     ],
   })
 );
