@@ -14,5 +14,5 @@ const sequelize = new Sequelize({
     },
   },
 });
-// dpg-ckg19n0l3its73bbg190-a.oregon-postgres.render.com
+
 module.exports = sequelize;
