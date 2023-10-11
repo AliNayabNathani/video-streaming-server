@@ -255,7 +255,7 @@ const getAllContentCreator = async (req, res) => {
         total_videos: creator.total_videos,
         subscribers: creator.subscribers,
         status: creator.status,
-        gender: user ? user.gender : null,
+        gender: user ? user.gender : "-",
       };
     })
   );
