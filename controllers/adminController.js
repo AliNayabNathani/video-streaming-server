@@ -249,13 +249,15 @@ const getAllContentCreator = async (req, res) => {
         // attributes: ["gender"],
       });
 
+      console.log("user here", user);
+
       return {
         id: creator.id,
         name: creator.name,
         total_videos: creator.total_videos,
         subscribers: creator.subscribers,
         status: creator.status,
-        gender: user ? user.gender : "-",
+        gender: user ? user.gender : "Not Specified",
       };
     })
   );
