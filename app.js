@@ -57,6 +57,10 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "https://video-streaming-6jkz.vercel.app",
+      "video-streaming-three.vercel.app",
+      "https://video-streaming-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-git-main-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-6o1xkdxeo-nayabnathani6-gmailcom.vercel.app/",
     ],
   })
 );
