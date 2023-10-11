@@ -246,7 +246,7 @@ const getAllContentCreator = async (req, res) => {
   const creatorData = await Promise.all(
     creators.map(async (creator) => {
       const user = await User.findByPk(creator.user_id, {
-        attributes: ["gender"],
+        // attributes: ["gender"],
       });
 
       return {
