@@ -9,9 +9,9 @@ const app = express();
 // const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
-// const rateLimiter = require("express-rate-limit");
-// const helmet = require("helmet");
-// const xss = require("xss-clean");
+const rateLimiter = require("express-rate-limit");
+const helmet = require("helmet");
+const xss = require("xss-clean");
 const cors = require("cors");
 const { auth } = require("express-openid-connect");
 const config = require("./config/auth0");
@@ -33,22 +33,38 @@ const statsRouter = require("./routes/statsRoutes");
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 
-// app.set("trust proxy", 1);
-// app.use(
-//   rateLimiter({
-//     windowMs: 15 * 60 * 1000,
-//     max: 60,
-//   })
-// );
-// app.use(helmet());
+app.set("trust proxy", 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+  })
+);
+app.use(helmet());
+
+// Logging middleware
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.url);
+  console.log("Request headers:", req.headers);
+  next();
+});
+
 app.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://video-streaming-6jkz.vercel.app",
+      "video-streaming-three.vercel.app",
+      "https://video-streaming-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-git-main-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-6o1xkdxeo-nayabnathani6-gmailcom.vercel.app/",
+    ],
   })
 );
-// app.use(xss());
+app.use(xss());
 
 // app.use(morgan('tiny'));
 
@@ -58,12 +74,9 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
-app.use(auth(config));
-//routes
+// app.use(auth(config));
 
-app.get("/", (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
-});
+//routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
