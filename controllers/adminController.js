@@ -239,7 +239,6 @@ const addSubCategory = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
 };
-
 const getAllContentCreator = async (req, res) => {
   const creators = await ContentCreator.findAll({});
 
