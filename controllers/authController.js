@@ -4,7 +4,7 @@ const CustomError = require("../errors");
 const { attachCookiesToResponse, createTokenUser } = require("../utils");
 
 const register = async (req, res) => {
-  const { email, name, password, role_id } = req.body;
+  const { email, name, password, role_id, mobile_number, gender } = req.body;
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new CustomError.BadRequestError("Email already exists");
@@ -14,7 +14,9 @@ const register = async (req, res) => {
     name,
     email,
     password,
-    role_id
+    role_id,
+    mobile_number,
+    gender,
   });
 
   res
@@ -104,8 +106,12 @@ const updateProfile = async (req, res) => {
   }
 
   await user.save();
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
 
-  res.status(StatusCodes.OK).json({ message: "Profile updated successfully." });
+  res
+    .status(StatusCodes.OK)
+    .json({ user: tokenUser, message: "Profile updated successfully." });
 };
 
 module.exports = {

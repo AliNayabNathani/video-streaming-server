@@ -22,6 +22,11 @@ const Trailer = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    views: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0,
+    },
     videoId: {
       type: DataTypes.BIGINT,
       allowNull: false,

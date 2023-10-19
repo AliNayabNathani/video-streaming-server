@@ -3,6 +3,7 @@ const sequelize = require("../config/sequelize");
 const Channel = require("./Channel");
 const Trailer = require("./Trailer");
 const Episode = require("./Episodes");
+const ViewsStats = require("./Stats");
 
 const Video = sequelize.define(
   "Video",
@@ -43,7 +44,6 @@ const Video = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
-
     Type: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -59,6 +59,18 @@ const Video = sequelize.define(
     status: {
       type: DataTypes.ENUM("Active", "Inactive"),
       defaultValue: "Active",
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal(
+        "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+      ),
     },
   },
   {

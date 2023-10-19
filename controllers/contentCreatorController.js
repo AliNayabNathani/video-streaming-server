@@ -15,6 +15,7 @@ const ContentApproval = require("../models/ContentApproval");
 const { Op } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const { uploadVideo, uploadVideoPoster } = require("./otherController");
+const recordView = require("../utils/recordViews");
 
 const MyVideos = async (req, res) => {
   const userId = "2";
@@ -62,7 +63,6 @@ const MyVideos = async (req, res) => {
 
 const getSingleMyVideo = async (req, res) => {
   const { id: videoId } = req.params;
-  // console.log(videoId);
 
   const video = await Video.findByPk(videoId, {
     include: [
@@ -74,6 +74,9 @@ const getSingleMyVideo = async (req, res) => {
   if (!video) {
     throw new CustomError.NotFoundError(`Video not found.`);
   }
+  const episodeId = 0;
+  const trailerId = 0;
+  // recordView(req.user.userId, videoId, episodeId, trailerId);
 
   res.status(StatusCodes.OK).json({ video });
 };
@@ -108,11 +111,12 @@ const addNewVideo = async (req, res) => {
     Genre,
     description,
     Cast,
-    // category,
-    // country,
     Type,
     trailer: { title: trailerTitle, poster: trailerPoster, file: trailerVideo },
-    episodes,
+    episodes: {
+      title: title, poster: poster, file: episodeVideo, description: desc,
+    },
+
   } = req.body;
 
   const video = await Video.create({
@@ -129,6 +133,14 @@ const addNewVideo = async (req, res) => {
     title: trailerTitle || "Trailer Title",
     file: trailerVideo,
     poster: trailerPoster,
+    videoId: video.id,
+  });
+
+  const episodes = await Episode.create({
+    title,
+    file,
+    poster: poster || null,
+    description: description || null,
     videoId: video.id,
   });
 
@@ -226,6 +238,11 @@ const getMyChannels = async (req, res) => {
             model: Trailer,
             as: "trailers",
             attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: 'episodes',
+            attributes: ["id", "poster", "file", "title", "description"],
           },
         ],
       },
@@ -387,7 +404,7 @@ const deleteChannel = async (req, res) => {
 //   };
 
 const submitFeedback = async (req, res) => {
-  const userId = "10"; //req.user after auth kardena
+  const userId = req.user.userId; //req.user after auth kardena
   const { id: videoId } = req.params;
   const { rating, comment } = req.body;
 
@@ -435,6 +452,34 @@ const updateSupport = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: "Support data updated successfully." });
 };
+
+const getSingleEpisode = async (req, res) => {
+  const { id: episodeId } = req.params;
+
+  const episode = await Episode.findByPk(episodeId);
+  if (!episode) {
+    throw new CustomError.NotFoundError(`No Episode with id: ${episodeId}`);
+  }
+  const trailerId = 0;
+  await recordView(req.user.userId, episode.videoId, trailerId, episode.id);
+
+  res.status(StatusCodes.OK).json({ episode });
+};
+
+const getSingleTrailer = async (req, res) => {
+  const { id: trailerId } = req.params;
+  const trailer = await Trailer.findByPk(trailerId);
+
+  if (!trailer) {
+    throw new CustomError.NotFoundError(`No Trailer with id: ${trailerId}`);
+  }
+
+  const episodeId = 0;
+  await recordView(req.user.userId, trailer.videoId, trailer.id, episodeId);
+
+  res.status(StatusCodes.OK).json({ trailer });
+};
+
 module.exports = {
   MyVideos,
   getMyChannels,
@@ -450,5 +495,7 @@ module.exports = {
   addNewEpisodeToVideo,
   addNewTrailerToVideo,
   deleteEpisode,
-  createNewChannelWithEpisodes
+  createNewChannelWithEpisodes,
+  getSingleEpisode,
+  getSingleTrailer,
 };

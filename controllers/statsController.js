@@ -230,36 +230,6 @@ const getTotalViewsForUser = async (req, res) => {
 };
 
 const calculateTotalViewsForUser = async (userId, interval) => {
-  const currentDate = moment();
-  let startDate, groupBy, dateFormat;
-
-  switch (interval) {
-    case "daily":
-      startDate = moment(currentDate).subtract(7, "days");
-      groupBy = [moment(currentDate).format("YYYY-MM-DD")];
-      dateFormat = "%Y-%m-%d";
-      break;
-    case "weekly":
-      startDate = moment(currentDate).subtract(20, "weeks");
-      groupBy = [moment(currentDate).format("YYYY [W]WW")];
-      dateFormat = "%Y [W]WW";
-      break;
-    case "monthly":
-      startDate = moment(currentDate).subtract(20, "months");
-      groupBy = [moment(currentDate).format("YYYY-MM")];
-      dateFormat = "%Y-%m";
-      break;
-    case "yearly":
-      startDate = moment(currentDate).subtract(20, "years");
-      groupBy = [moment(currentDate).format("YYYY")];
-      dateFormat = "%Y";
-      break;
-    default:
-      startDate = moment(currentDate).subtract(20, "days");
-      groupBy = [moment(currentDate).format("YYYY-MM-DD")];
-      dateFormat = "%Y-%m-%d";
-  }
-
   const contentCreator = await ContentCreator.findOne({
     where: {
       user_id: userId,
@@ -282,38 +252,80 @@ const calculateTotalViewsForUser = async (userId, interval) => {
 
   const channelIds = channels.map((channel) => channel.id);
 
-  const videos = await Video.findAll({
-    attributes: [
-      [
-        Video.sequelize.fn(
-          "date_trunc",
-          dateFormat,
-          Video.sequelize.col("createdAt")
-        ),
-        "date",
-      ],
-      [Video.sequelize.fn("sum", Video.sequelize.col("views")), "views"],
-    ],
-    group: ["date"],
-    where: {
-      channelId: channelIds,
-      createdAt: {
-        [Op.between]: [startDate, currentDate],
+  const currentDate = new Date();
+  let dateGenerator;
+
+  switch (interval) {
+    case "daily":
+      dateGenerator = (index) =>
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() - index
+        );
+      break;
+    case "weekly":
+      dateGenerator = (index) =>
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() - index * 7
+        );
+      break;
+    case "monthly":
+      dateGenerator = (index) =>
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() - index,
+          currentDate.getDate()
+        );
+      break;
+    case "yearly":
+      dateGenerator = (index) =>
+        new Date(
+          currentDate.getFullYear() - index,
+          currentDate.getMonth(),
+          currentDate.getDate()
+        );
+      break;
+
+    default:
+      dateGenerator = (index) => {
+        const startDate = new Date();
+        startDate.setDate(currentDate.getDate() - index);
+        return startDate;
+      };
+  }
+  const data = [];
+  for (let i = 0; i < 7; i++) {
+    const endIntervalDate = dateGenerator(i);
+    const startIntervalDate = dateGenerator(i + 1);
+
+    const views = await Video.findOne({
+      attributes: [[sequelize.fn("SUM", sequelize.col("views")), "totalViews"]],
+      where: {
+        channelId: channelIds,
+        createdAt: {
+          [Op.between]: [startIntervalDate, endIntervalDate],
+        },
       },
-    },
-    group: groupBy,
-    order: [["date", "ASC"]],
-  });
+      raw: true,
+    });
 
-  console.log('Data: ', videos);
+    data.push({
+      startInterval: startIntervalDate.toISOString().split("T")[0],
+      endInterval: endIntervalDate.toISOString().split("T")[0],
+      views: views ? views.totalViews || 0 : 0,
+    });
+  }
 
-  return videos;
+  return data;
 };
-
 const getViewsGraph = async (req, res) => {
   const userId = req.user.userId;
-
+  // console.log("curr user", userId);
   const intervals = ["daily", "weekly", "monthly", "yearly"];
+
   const viewsByInterval = {};
 
   for (const interval of intervals) {

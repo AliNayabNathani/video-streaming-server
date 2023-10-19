@@ -25,6 +25,24 @@ const ViewsStats = sequelize.define(
         key: "id",
       },
     },
+    episode_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0,
+      references: {
+        model: "episode",
+        key: "id",
+      },
+    },
+    trailer_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0,
+      references: {
+        model: "trailer",
+        key: "id",
+      },
+    },
   },
   {
     tableName: "views_stats",

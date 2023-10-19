@@ -22,6 +22,11 @@ const Episode = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    views: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0,
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,

@@ -5,7 +5,9 @@ require("express-async-errors");
 const express = require("express");
 const app = express();
 
+
 //rest of the packages
+const path = require('path');
 // const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
@@ -13,8 +15,6 @@ const fileUpload = require("express-fileupload");
 // const helmet = require("helmet");
 // const xss = require("xss-clean");
 const cors = require("cors");
-const { auth } = require("express-openid-connect");
-const config = require("./config/auth0");
 
 //database
 const { connectDB, dbConfig } = require("./db/connect");
@@ -28,10 +28,28 @@ const clientRouter = require("./routes/clientRoutes");
 const otherRouter = require("./routes/otherRoutes");
 const contentCreatorRouter = require("./routes/contentCreatorRoutes");
 const statsRouter = require("./routes/statsRoutes");
+const userRouter = require('./routes/userRoutes');
 
 //import middlewares
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
+
+// // Serve files from the 'public' directory
+// app.use(express.static(path.join(__dirname, 'public')));
+
+// // Define a route to serve images
+// app.get('/images/:imageName', (req, res) => {
+//   const { imageName } = req.params;
+//   console.log(imageName);
+//   const imagePath = path.join(__dirname, 'public', imageName);
+
+//   // Check if the file exists before sending it
+//   if (fs.existsSync(imagePath)) {
+//     res.sendFile(imagePath);
+//   } else {
+//     res.status(404).send('Image not found');
+//   }
+// });
 
 // app.set("trust proxy", 1);
 // app.use(
@@ -48,8 +66,8 @@ app.use(
     origin: ["http://localhost:3000", "http://localhost:3001"],
   })
 );
-
 // app.use(xss());
+
 // app.use(morgan('tiny'));
 
 //access to json data in req.body
@@ -64,12 +82,18 @@ app.use(fileUpload());
 // app.get("/", (req, res) => {
 //   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
 // });
+
+app.use(
+  "public",
+  express.static(path.join(__dirname, "public"))
+);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/creator", contentCreatorRouter);
 app.use("/api/v1/client", clientRouter);
+app.use('/api/v1/user', userRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

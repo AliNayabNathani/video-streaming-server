@@ -314,7 +314,7 @@ const addContentCreator = async (req, res) => {
   const { name, gender, mobile_number } = req.body;
   //also add mobile after uncommenting in model
   const existingUser = await User.findOne({ where: { name } });
-  console.log("i exist: ", existingUser);
+  // console.log("i exist: ", existingUser);
   if (!existingUser) {
     throw new CustomError.NotFoundError("User Not Found. Create User First");
   }
@@ -322,6 +322,10 @@ const addContentCreator = async (req, res) => {
     name,
     user_id: existingUser.id,
   });
+
+  existingUser.role_id = 4;
+
+  await existingUser.save();
 
   res
     .status(StatusCodes.CREATED)
@@ -348,7 +352,6 @@ const getSingleContentCreator = async (req, res) => {
 
 const deleteContentCreator = async (req, res) => {
   const ContentCreatorIdToDelete = req.params.id;
-  console.log(ContentCreatorIdToDelete);
 
   const ContentCreatorToDelete = await ContentCreator.findByPk(
     ContentCreatorIdToDelete
@@ -551,7 +554,7 @@ const editContentCreatorTable = async (req, res) => {
   const { id: ContentCreatorIdToEdit } = req.params;
   const { ContentCreator: requestContentCreator } = req;
 
-  // checkPermissions(requestContentCreator, ContentCreatorIdToEdit);
+  // checkPermissions(, );
 
   const { name } = req.body;
 
@@ -692,6 +695,7 @@ const getAllVideos = async (req, res) => {
       "views",
       "rented_amount",
       "purchasing_amount",
+      "views",
       "createdAt",
       "channelId",
     ],
