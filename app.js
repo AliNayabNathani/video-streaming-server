@@ -1,10 +1,11 @@
 require("dotenv").config();
 require("express-async-errors");
+const bodyParser = require('body-parser');
+const expressip = require('express-ip');
 
 //express
 const express = require("express");
 const app = express();
-
 
 //rest of the packages
 const path = require('path');
@@ -34,23 +35,6 @@ const userRouter = require('./routes/userRoutes');
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 
-// // Serve files from the 'public' directory
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// // Define a route to serve images
-// app.get('/images/:imageName', (req, res) => {
-//   const { imageName } = req.params;
-//   console.log(imageName);
-//   const imagePath = path.join(__dirname, 'public', imageName);
-
-//   // Check if the file exists before sending it
-//   if (fs.existsSync(imagePath)) {
-//     res.sendFile(imagePath);
-//   } else {
-//     res.status(404).send('Image not found');
-//   }
-// });
-
 // app.set("trust proxy", 1);
 // app.use(
 //   rateLimiter({
@@ -59,11 +43,12 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 //   })
 // );
 // app.use(helmet());
+
 app.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: ["http://127.0.0.1:3000", "http://127.0.0.1:3001"],
   })
 );
 // app.use(xss());
@@ -74,6 +59,10 @@ app.use(
 app.use(express.json());
 app.use(cookieParser('jwtSecret'));
 
+app.use(bodyParser.json());
+app.use(expressip().getIpInfoMiddleware);
+
+
 // app.use(express.static("./public"));
 app.use(fileUpload());
 // app.use(auth(config));
@@ -83,10 +72,12 @@ app.use(fileUpload());
 //   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
 // });
 
-app.use(
-  "public",
-  express.static(path.join(__dirname, "public"))
-);
+// app.use(
+//   "public",
+//   express.static(path.join(__dirname, "public"))
+// );
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads/posters/")));
+
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
 app.use("/api/v1/other", otherRouter);
