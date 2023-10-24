@@ -5,6 +5,7 @@ const {
   uploadVideo,
   uploadVideoPoster,
   otpController,
+  stripeController,
 } = require("../controllers/otherController");
 const {
   authenticateUser,
@@ -28,5 +29,8 @@ router.post("/generate-otp", otpController.generateOTP);
 
 // Verify OTP
 router.post("/verify-otp", otpController.verifyOTP);
+
+// Verify OTP
+router.post("/stripe", stripeController);
 
 module.exports = router;

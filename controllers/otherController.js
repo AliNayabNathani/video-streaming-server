@@ -7,6 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const OTPModel = require("../models/OTP");
 const nodemailer = require("nodemailer");
+const stripe = require("stripe")(
+  "sk_test_51NcJPPC3eQWXYigjQevJ42k0hp6NUXq7dF745HA7ITXVd9GZO9mnnqRbnLq1o97pAi6H020T6KRbyrZ6dG1DqFsx00GQOnrNqd"
+);
 
 //uncomment after u add auth
 const postComment = async (req, res) => {
@@ -167,10 +170,29 @@ const otpController = {
   },
 };
 
+const stripeController = async (req, res) => {
+  const { purchase, total_amount, shipping_fee } = req.body;
+
+  const calculateTotal = () => {
+    return total_amount + shipping_fee;
+  };
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: calculateTotal(),
+    currency: "usd",
+  });
+
+  res.status(StatusCodes.OK).json({
+    msg: "Payment successfuly!",
+    clientSecret: paymentIntent.client_secret,
+  });
+};
+
 module.exports = {
   postComment,
   getComments,
   uploadVideo,
   uploadVideoPoster,
   otpController,
+  stripeController,
 };
