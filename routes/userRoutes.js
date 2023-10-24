@@ -9,7 +9,10 @@ const {
     AllChannels,
     createProfile,
     getProfiles,
-    getDevice
+    addDevice,
+    getDevice,
+    TermsandConditions,
+    privacyPolicy
 } = require('../controllers/userController');
 
 const router = express.Router();
@@ -20,5 +23,12 @@ router.route('/createProfile').post(authenticateUser, createProfile);
 
 router.route('/getProfiles').get(authenticateUser, getProfiles);
 
-router.route('/getDevice/:id').get(authenticateUser, getDevice);
+router.route('/addDevice').post(authenticateUser, addDevice);
+
+router.route('/getDevice').get(authenticateUser, getDevice);
+
+router.route('/gettTerms').get(authenticateUser, TermsandConditions);
+
+router.route('/getPrivacy').get(authenticateUser, privacyPolicy);
+
 module.exports = router;

@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const Role = require("./Role");
 const ContentCreator = require("./ContentCreator");
 const Member = require("./members");
+const Device = require("./Device");
 
 const User = sequelize.define(
   "User",
@@ -83,6 +84,10 @@ User.hasMany(Member, {
   as: 'Member'
 });
 
+User.hasMany(Device, {
+  foreignKey: 'device_id',
+  as: 'device'
+});
 // User.beforeCreate(async (user, options) => {
 //   if (user.changed("password")) {
 //     const salt = await bcrypt.genSalt(10);

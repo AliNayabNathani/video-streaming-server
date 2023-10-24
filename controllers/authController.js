@@ -56,27 +56,27 @@ const login = async (req, res) => {
   attachCookiesToResponse({ res, user: tokenUser });
 
   // Extract and parse the User-Agent header
-  const userAgent = req.get('User-Agent');
+  // const userAgent = req.get('User-Agent');
 
-  const userDevice = device(userAgent);
+  // const userDevice = device(userAgent);
 
-  const parsedUserAgent = userAgentParser(userAgent);
+  // const parsedUserAgent = userAgentParser(userAgent);
 
-  const deviceInfo = {
-    type: userDevice.type,
-    isMobile: userDevice.is('phone') || userDevice.is('tablet'),
-    model: parsedUserAgent.device.model,
-    os: parsedUserAgent.os.name,
-    osVersion: parsedUserAgent.os.version,
-  };
-  const userId = user.id;
-  const loginTime = new Date();
+  // const deviceInfo = {
+  //   type: userDevice.type,
+  //   isMobile: userDevice.is('phone') || userDevice.is('tablet'),
+  //   model: parsedUserAgent.device.model,
+  //   os: parsedUserAgent.os.name,
+  //   osVersion: parsedUserAgent.os.version,
+  // };
+  // const userId = user.id;
+  // const loginTime = new Date();
 
-  const { latitude, longitude } = req.body;
-  console.log('Received GPS data - Latitude:', latitude, 'Longitude:', longitude);
-  // const clientIp = req.ipInfo;
-  // console.log('Client IP: ', clientIp);
+  // // const clientIp = req.ipInfo;
+  // const clientIp = '103.244.177.88';
+
   // const geoData = await ipinfo(clientIp);
+
   // const location = `${geoData.city}, ${geoData.region}, ${geoData.country}`;
 
   // // Now, 'location' contains the user's approximate location
@@ -84,7 +84,7 @@ const login = async (req, res) => {
   // userDevices[userId] = { ...deviceInfo, loginTime };
   // loginHistory.push({ userId, deviceInfo, loginTime });
 
-  res.status(StatusCodes.OK).json({ user: tokenUser, deviceInfo, location, clientIp, msg: "Logged In" });
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
 };
 
 const logout = async (req, res) => {
@@ -96,7 +96,7 @@ const logout = async (req, res) => {
 };
 
 const updatePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
+  const { oldPassword, newPassword, userId } = req.body;
 
   if (!oldPassword || !newPassword) {
     return res
@@ -105,7 +105,7 @@ const updatePassword = async (req, res) => {
   }
 
   // const user = await User.findByPk(req.user.id);
-  const user = await User.findByPk(11);
+  const user = await User.findByPk(userId);
 
   if (!user) {
     throw new CustomError.NotFoundError("User not found");
