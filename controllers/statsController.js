@@ -330,6 +330,7 @@ const getViewsGraph = async (req, res) => {
 
   for (const interval of intervals) {
     const viewsData = await calculateTotalViewsForUser(userId, interval);
+    console.log(viewsData);
     viewsByInterval[interval] = viewsData;
   }
 

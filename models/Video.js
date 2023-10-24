@@ -44,7 +44,6 @@ const Video = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
-
     Type: {
       type: DataTypes.STRING,
       allowNull: true,

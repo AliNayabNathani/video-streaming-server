@@ -7,7 +7,6 @@ const Episode = require("../models/Episodes");
 const Channel = require("../models/Channel");
 const Support = require("../models/Support");
 const json2csv = require("json2csv");
-const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const Video = require("../models/Video");
@@ -74,8 +73,9 @@ const getSingleMyVideo = async (req, res) => {
   if (!video) {
     throw new CustomError.NotFoundError(`Video not found.`);
   }
-
-  recordView(req.user.userId, videoId);
+  const episodeId = 0;
+  const trailerId = 0;
+  // recordView(req.user.userId, videoId, episodeId, trailerId);
 
   res.status(StatusCodes.OK).json({ video });
 };
@@ -110,11 +110,12 @@ const addNewVideo = async (req, res) => {
     Genre,
     description,
     Cast,
-    // category,
-    // country,
     Type,
     trailer: { title: trailerTitle, poster: trailerPoster, file: trailerVideo },
-    episodes,
+    episodes: {
+      title: title, poster: poster, file: episodeVideo, description: desc,
+    },
+
   } = req.body;
 
   const video = await Video.create({
@@ -131,6 +132,14 @@ const addNewVideo = async (req, res) => {
     title: trailerTitle || "Trailer Title",
     file: trailerVideo,
     poster: trailerPoster,
+    videoId: video.id,
+  });
+
+  const episodes = await Episode.create({
+    title,
+    file,
+    poster: poster || null,
+    description: description || null,
     videoId: video.id,
   });
 
@@ -229,6 +238,11 @@ const getMyChannels = async (req, res) => {
             as: "trailers",
             attributes: ["id", "poster", "file", "title"],
           },
+          {
+            model: Episode,
+            as: 'episodes',
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
         ],
       },
     ],
@@ -314,17 +328,21 @@ const createNewChannel = async (req, res) => {
 
 const createNewChannelWithEpisodes = async (req, res) => {
   const { name, episodes } = req.body;
-  const content_creator_id = 4;
+  const userId = req.user.userId;
+  const contentCreator = await ContentCreator.findOne({
+    where: {
+      user_id: userId,
+    },
 
-  if (!name || !content_creator_id) {
-    throw new CustomError.BadRequestError(
-      "Name and content_creator_id are required for creating a channel"
-    );
+  });
+  console.log(contentCreator)
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError("Not Found.")
   }
 
   const channel = await Channel.create({
     name,
-    content_creator_id,
+    content_creator_id: contentCreator.id,
   });
 
   if (Array.isArray(episodes) && episodes.length > 0) {
@@ -395,7 +413,7 @@ const deleteChannel = async (req, res) => {
 //   };
 
 const submitFeedback = async (req, res) => {
-  const userId = "10"; //req.user after auth kardena
+  const userId = req.user.userId; //req.user after auth kardena
   const { id: videoId } = req.params;
   const { rating, comment } = req.body;
 
@@ -507,6 +525,7 @@ module.exports = {
   addNewEpisodeToVideo,
   addNewTrailerToVideo,
   deleteEpisode,
+  createNewChannelWithEpisodes,
   getSingleEpisode,
   getSingleTrailer,
 };

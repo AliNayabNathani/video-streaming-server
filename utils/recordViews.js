@@ -5,6 +5,7 @@ const Trailer = require("../models/Trailer");
 
 const recordView = async (userId, videoId, trailerId, episodeId) => {
   console.log("trailer  id", trailerId, "video id", videoId);
+
   await ViewsStats.create({
     user_id: userId,
     video_id: videoId,

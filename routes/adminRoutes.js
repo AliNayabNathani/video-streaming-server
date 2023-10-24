@@ -47,37 +47,37 @@ const {
 //get All Users
 router
   .route("/")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllUsers);
+  .get(authenticateUser, getAllUsers);
 
 //export user csv
 router
   .route("/export-users-csv")
-  .get(authenticateUser, authorizePermission("1", "3"), UserExportCsv);
+  .get(authenticateUser, UserExportCsv);
 
 //Add New User
 router
   .route("/add-new-user")
-  .post(authenticateUser, authorizePermission("1", "3"), addNewUser);
+  .post(authenticateUser, addNewUser);
 
 //Add Coupon
 router
   .route("/add-new-coupon")
-  .post(authenticateUser, authorizePermission("1", "3"), addNewCoupon);
+  .post(authenticateUser, addNewCoupon);
 
 //Get Coupon
 router
   .route("/get-coupons")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllCoupons);
+  .get(authenticateUser, getAllCoupons);
 
 //Add Content Creators
 router
   .route("/add-content-creator")
-  .post(authenticateUser, authorizePermission("1", "3"), addContentCreator);
+  .post(authenticateUser, addContentCreator);
 
 //Get Content Creators
 router
   .route("/get-content-creator")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllContentCreator);
+  .get(authenticateUser, getAllContentCreator);
 
 //Get Content Creators
 router
@@ -91,17 +91,17 @@ router
 //Add Category
 router
   .route("/add-category")
-  .post(authenticateUser, authorizePermission("1", "3"), addCategory);
+  .post(authenticateUser, addCategory);
 
 //Add Sub Category
 router
   .route("/add-sub-category")
-  .post(authenticateUser, authorizePermission("1", "3"), addSubCategory);
+  .post(authenticateUser, addSubCategory);
 
 //Content Management Module
 router
   .route("/get-all-content")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllContent);
+  .get(authenticateUser, getAllContent);
 router
   .route("/terms-and-conditions")
   .put(authenticateUser, authorizePermission("1"), updateTermsAndConditions);
@@ -115,27 +115,27 @@ router
 //Get all sub-categories
 router
   .route("/get-all-category")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllCategories);
+  .get(authenticateUser, getAllCategories);
 
 //Get all sub-categories
 router
   .route("/get-all-subcategory")
-  .get(authenticateUser, authorizePermission("1", "3"), getSubCategory);
+  .get(authenticateUser, getSubCategory);
 
 //Get All Channels
 router
   .route("/channels")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllChannels);
+  .get(authenticateUser, getAllChannels);
 
 //Get Content Approval
 router
   .route("/content-approval")
-  .get(authenticateUser, authorizePermission("1", "3"), GetContentApproval);
+  .get(authenticateUser, GetContentApproval);
 
 //Get All Videos
 router
   .route("/videos")
-  .get(authenticateUser, authorizePermission("1", "3"), getAllVideos);
+  .get(authenticateUser, getAllVideos);
 
 //Get All Cat and Sub Cat
 router
@@ -158,12 +158,12 @@ router
 //Get All Channels
 router
   .route("/channel/:id")
-  .get(authenticateUser, authorizePermission("1", "3"), getSingleChannel);
+  .get(authenticateUser, getSingleChannel);
 
 //Get or Delete ContentCreator
 router
   .route("/contentcreator/:id")
-  .get(authenticateUser, authorizePermission("1", "3"), getSingleContentCreator)
+  .get(authenticateUser, getSingleContentCreator)
   .delete(authenticateUser, authorizePermission("1"), deleteContentCreator);
 
 //Get Content Creator Detail Screen
@@ -205,7 +205,7 @@ router
 //Get or Delete Category
 router
   .route("/category/:id")
-  .get(authenticateUser, authorizePermission("1", "3"), getSingleCategory)
+  .get(authenticateUser, getSingleCategory)
   .delete(authenticateUser, authorizePermission("1"), deleteCategory);
 
 //Edit Category info
@@ -216,12 +216,12 @@ router
 //reject content
 router
   .route("/content/:id/reject")
-  .post(authenticateUser, authorizePermission("1", "3"), rejectContent);
+  .post(authenticateUser, rejectContent);
 
 //accept
 router
   .route("/content/:id/accept")
-  .post(authenticateUser, authorizePermission("1", "3"), acceptContent);
+  .post(authenticateUser, acceptContent);
 
 //change Channel status
 // router.route("/channel/:id/active").put(changeChannelActiveStatus);
@@ -229,7 +229,7 @@ router
 //Get or Delete Single User
 router
   .route("/:id")
-  .get(authenticateUser, authorizePermission("1", "3"), getSingleUser)
+  .get(authenticateUser, getSingleUser)
   .delete(authenticateUser, authorizePermission("1"), deleteUser);
 
 //change user status
@@ -238,6 +238,6 @@ router.route("/:id/active").put(changeActiveStatus);
 // Edit User Information
 router
   .route("/:id/edit")
-  .put(authenticateUser, authorizePermission("1", "3"), editUserTable);
+  .put(authenticateUser, editUserTable);
 
 module.exports = router;

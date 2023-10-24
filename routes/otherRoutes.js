@@ -20,9 +20,8 @@ router
 
 router
   .route("/uploadVideo")
-  .post(authenticateUser, authorizePermission("4"), uploadVideo);
-
-router.route("/uploadPicture").post(authenticateUser, uploadVideoPoster);
+  .post(authenticateUser, uploadVideo);
+router.route("/uploadPicture").post(uploadVideoPoster);
 
 // Generate OTP and store it in the database
 router.post("/generate-otp", otpController.generateOTP);

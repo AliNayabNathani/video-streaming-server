@@ -1,10 +1,10 @@
 const { Pool } = require("pg");
 
 const dbConfig = {
-  user: "videodb_jkqb_user",
-  host: "dpg-ckhp3a6afg7c73frctsg-a.oregon-postgres.render.com",
-  database: "videodb_jkqb",
-  password: "x79U393nDALkG7WcjlF4OvpVlea3usW9",
+  user: "postgres",
+  host: "127.0.0.1",
+  database: "videoserver",
+  password: "admin",
   port: 5432,
 };
 const connectDB = () => {

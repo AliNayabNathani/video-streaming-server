@@ -8,7 +8,6 @@ const SubCategory = require("../models/SubCategory");
 const ContentManagement = require("../models/ContentManagement");
 const json2csv = require("json2csv");
 // const json2csv = require("json2csv").Parser;
-const fs = require("fs").promises;
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const {
@@ -227,9 +226,12 @@ const addSubCategory = async (req, res) => {
   if (!categoryId) {
     throw new CustomError.NotFoundError("Category doesn't exist");
   }
-  const existingSubCategory = await SubCategory.findOne({ where: { name } });
+  const existingSubCategory = await SubCategory.findOne({
+    where: { name, category_id },
+  });
+
   if (existingSubCategory) {
-    throw new CustomError.BadRequestError("Category already exist");
+    throw new CustomError.BadRequestError("Sub Category already exist");
   }
   const newSubCategory = await SubCategory.create({
     name,
@@ -351,7 +353,6 @@ const getSingleContentCreator = async (req, res) => {
 
 const deleteContentCreator = async (req, res) => {
   const ContentCreatorIdToDelete = req.params.id;
-  console.log(ContentCreatorIdToDelete);
 
   const ContentCreatorToDelete = await ContentCreator.findByPk(
     ContentCreatorIdToDelete
@@ -618,7 +619,7 @@ const changeChannelActiveStatus = async (req, res) => {
   // checkPermissions(requestUser, userToChange.id);
 
   channelToChange.status =
-    channelToChange.status === "Active" ? "Inactive" : "Active";
+    channelToChange.status === "Active" ? "InActive" : "Active";
   await channelToChange.save();
 
   res
@@ -914,7 +915,7 @@ const GetContentApproval = async (req, res, next) => {
 
 const rejectContent = async (req, res) => {
   const contentId = req.params.id;
-  const user_admin = req.user;
+  // const user_admin = req.user;
 
   const content = await Video.findByPk(contentId);
 
@@ -925,7 +926,7 @@ const rejectContent = async (req, res) => {
   // checkPermissions(user_admin, content.user_id);
 
   const contentapproval = await ContentApproval.create({
-    user_id: user_admin.id,
+    user_id: 1,
     video_id: contentId,
     status: "Reject",
   });

@@ -3,6 +3,7 @@ const sequelize = require("../config/sequelize");
 const bcrypt = require("bcryptjs");
 const Role = require("./Role");
 const ContentCreator = require("./ContentCreator");
+const Member = require("./members");
 
 const User = sequelize.define(
   "User",
@@ -75,6 +76,11 @@ User.belongsTo(Role, {
 User.hasOne(ContentCreator, {
   foreignKey: "user_id",
   as: "contentCreator",
+});
+
+User.hasMany(Member, {
+  foreignKey: 'member_id',
+  as: 'Member'
 });
 
 // User.beforeCreate(async (user, options) => {

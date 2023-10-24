@@ -2,10 +2,15 @@ const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const { attachCookiesToResponse, createTokenUser } = require("../utils");
+const device = require('device');
+const userAgentParser = require('ua-parser-js');
+const ipinfo = require('ipinfo');
+
+const userDevices = {};
+const loginHistory = [];
 
 const register = async (req, res) => {
-  const { email, name, password } = req.body;
-
+  const { email, name, password, role_id, mobile_number, gender } = req.body;
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new CustomError.BadRequestError("Email already exists");
@@ -15,6 +20,9 @@ const register = async (req, res) => {
     name,
     email,
     password,
+    role_id,
+    mobile_number,
+    gender,
   });
 
   res
@@ -31,7 +39,7 @@ const login = async (req, res) => {
 
   const user = await User.findOne({
     where: { email },
-    attributes: ["id", "name", "password", "role_id"],
+    attributes: ["id", "name", "password", "email", "role_id"],
   });
 
   if (!user) {
@@ -46,7 +54,37 @@ const login = async (req, res) => {
 
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
-  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+
+  // Extract and parse the User-Agent header
+  const userAgent = req.get('User-Agent');
+
+  const userDevice = device(userAgent);
+
+  const parsedUserAgent = userAgentParser(userAgent);
+
+  const deviceInfo = {
+    type: userDevice.type,
+    isMobile: userDevice.is('phone') || userDevice.is('tablet'),
+    model: parsedUserAgent.device.model,
+    os: parsedUserAgent.os.name,
+    osVersion: parsedUserAgent.os.version,
+  };
+  const userId = user.id;
+  const loginTime = new Date();
+
+  const { latitude, longitude } = req.body;
+  console.log('Received GPS data - Latitude:', latitude, 'Longitude:', longitude);
+  // const clientIp = req.ipInfo;
+  // console.log('Client IP: ', clientIp);
+  // const geoData = await ipinfo(clientIp);
+  // const location = `${geoData.city}, ${geoData.region}, ${geoData.country}`;
+
+  // // Now, 'location' contains the user's approximate location
+  // console.log('User Location:', location);
+  // userDevices[userId] = { ...deviceInfo, loginTime };
+  // loginHistory.push({ userId, deviceInfo, loginTime });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, deviceInfo, location, clientIp, msg: "Logged In" });
 };
 
 const logout = async (req, res) => {

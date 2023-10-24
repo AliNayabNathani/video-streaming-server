@@ -8,6 +8,7 @@ const {
   submitFeedback,
   getSingleChannelDetail,
   createNewChannel,
+  createNewChannelWithEpisodes,
   getSupport,
   updateSupport,
   deleteChannel,
@@ -26,42 +27,43 @@ const router = express.Router();
 router.route("/myvideo").get(authenticateUser, MyVideos);
 router
   .route("/myvideo/add")
-  .post(authenticateUser, authorizePermission("4"), addNewVideo);
+  .post(authenticateUser, addNewVideo);
 
 router.route("/mychannels").get(authenticateUser, getMyChannels);
 router
   .route("/mychannel/add")
-  .post(authenticateUser, authorizePermission("4"), createNewChannel);
+  .post(authenticateUser, createNewChannelWithEpisodes);
 
 router
   .route("/get-support")
   .get(authenticateUser, getSupport)
-  .patch(authenticateUser, authorizePermission("1"), updateSupport);
+  .patch(authenticateUser, updateSupport);
 
 router
   .route("/mychannel/:id")
   .get(getSingleChannelDetail)
-  .delete(authenticateUser, authorizePermission("4"), deleteChannel);
+  .delete(authenticateUser, deleteChannel);
 
 router
   .route("/myvideo/:id")
   .get(authenticateUser, getSingleMyVideo)
-  .put(authenticateUser, authorizePermission("1", "4"), changeVideoStatus);
+  .put(authenticateUser, changeVideoStatus);
 
 router.route("/trailer/:id").get(authenticateUser, getSingleTrailer);
 
 router
   .route("/add-episode/:id")
-  .post(authenticateUser, authorizePermission("4"), addNewEpisodeToVideo);
+  .post(authenticateUser, addNewEpisodeToVideo);
+
 router
   .route("/episodes/:id")
   .get(authenticateUser, getSingleEpisode)
-  .delete(authenticateUser, authorizePermission("1", "4"), deleteEpisode);
+  .delete(authenticateUser, deleteEpisode);
 router
   .route("/add-trailer/:id")
-  .post(authenticateUser, authorizePermission("1", "4"), addNewTrailerToVideo);
+  .post(authenticateUser, addNewTrailerToVideo);
 router
   .route("/feedback/:id")
-  .post(authenticateUser, authorizePermission("1", "4"), submitFeedback);
+  .post(authenticateUser, submitFeedback);
 
 module.exports = router;

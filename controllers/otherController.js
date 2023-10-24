@@ -3,7 +3,6 @@ const CustomError = require("../errors");
 const Comment = require("../models/Comment");
 const User = require("../models/User");
 const pusher = require("../config/pusher");
-const fs = require("fs");
 const path = require("path");
 const OTPModel = require("../models/OTP");
 const nodemailer = require("nodemailer");
@@ -79,7 +78,7 @@ const uploadVideo = async (req, res) => {
   }
 
   //Max Size = 10MB
-  const maxSize = 10 * 1024 * 1024;
+  const maxSize = 20 * 1024 * 1024;
   if (videoFile.size > maxSize) {
     throw new CustomError.BadRequestError("Max Video Size Should be 10MB");
   }
@@ -97,19 +96,17 @@ const uploadVideo = async (req, res) => {
 };
 
 const uploadVideoPoster = async (req, res) => {
-  if (!req.files) {
+  if (!req.body) {
     throw new CustomError.BadRequestError("No File Uploaded");
   }
-
   const videoPoster = req.files.image;
-
   if (!videoPoster.mimetype.startsWith("image")) {
     throw new CustomError.BadRequestError("Image Files Only!");
   }
 
-  const maxSize = 1024 * 1024 * 1; //1MB
+  const maxSize = 1024 * 1024 * 5 //5MB
   if (videoPoster.size > maxSize) {
-    throw new CustomError.BadRequestError("Max Image Size Should be 20MB");
+    throw new CustomError.BadRequestError("Max Image Size Should be 5mb");
   }
 
   const imagePath = path.join(
@@ -117,11 +114,11 @@ const uploadVideoPoster = async (req, res) => {
     "../public/uploads/posters/" + `${videoPoster.name}`
   );
 
-  await videoPoster.mv(imagePath);
+  await videoPoster?.mv(imagePath);
 
   return res
     .status(StatusCodes.OK)
-    .send({ image: { src: `/uploads/${videoPoster.name}` } });
+    .send({ image: { src: `/uploads/${videoPoster}` } });
 };
 
 const transporter = nodemailer.createTransport({
