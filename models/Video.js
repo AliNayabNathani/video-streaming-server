@@ -3,6 +3,8 @@ const sequelize = require("../config/sequelize");
 const Channel = require("./Channel");
 const Trailer = require("./Trailer");
 const Episode = require("./Episodes");
+const Subscription = require("./Subscription");
+const Payment = require("./Payment");
 const ViewsStats = require("./Stats");
 
 const Video = sequelize.define(
@@ -22,11 +24,11 @@ const Video = sequelize.define(
       allowNull: true,
     },
     rented_amount: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.FLOAT,
       allowNull: true,
     },
     purchasing_amount: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.FLOAT,
       allowNull: true,
     },
     views: {
@@ -88,6 +90,16 @@ Video.hasMany(Episode, {
   as: "episodes",
 });
 
+// Video.hasMany(Subscription, {
+//   foreignKey: "video_id",
+//   as: "subscriptions",
+// });
+
+Video.hasMany(Payment, {
+  foreignKey: "video_id",
+  as: "payments",
+});
+
 Video.prototype.getChannelDetails = async function () {
   try {
     const videoDetails = await Channel.findByPk(this.channelId);
@@ -97,5 +109,7 @@ Video.prototype.getChannelDetails = async function () {
     throw error;
   }
 };
+
+Video.sync();
 
 module.exports = Video;

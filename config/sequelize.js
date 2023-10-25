@@ -7,6 +7,12 @@ const sequelize = new Sequelize({
   username: "videodb_jkqb_user",
   password: "x79U393nDALkG7WcjlF4OvpVlea3usW9",
   database: "videodb_jkqb",
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
   dialectOptions: {
     ssl: {
       require: true,

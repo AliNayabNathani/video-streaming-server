@@ -21,6 +21,7 @@ const cors = require("cors");
 const { connectDB, dbConfig } = require("./db/connect");
 const sequelize = require("./config/sequelize");
 const pusher = require("./config/pusher");
+const Subscription = require("./models/Subscription");
 
 //routers
 const authRouter = require("./routes/authRoutes");
@@ -100,6 +101,7 @@ sequelize
     console.error("Error syncing database:", err);
   });
 
+Subscription.startCron();
 const port = process.env.PORT || 5000;
 const start = async () => {
   try {
