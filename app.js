@@ -37,7 +37,6 @@ const userRouter = require('./routes/userRoutes');
 //import middlewares
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
-const { SupportChat } = require("./controllers/userController");
 
 // app.set("trust proxy", 1);
 // app.use(
@@ -82,7 +81,8 @@ app.use(fileUpload());
 //   "public",
 //   express.static(path.join(__dirname, "public"))
 // );
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads/posters/")));
+app.use("/uploadPicture", express.static(path.join(__dirname, "public/uploads/posters/")));
+app.use("/uploadVideos", express.static(path.join(__dirname, "public/uploads/vidoes/")));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
