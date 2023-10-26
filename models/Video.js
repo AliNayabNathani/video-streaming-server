@@ -46,21 +46,25 @@ const Video = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
-    Type: {
+    type: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    Cast: {
+    cast: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    Genre: {
+    genre: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    status: {
-      type: DataTypes.ENUM("Active", "Inactive"),
-      defaultValue: "Active",
+    categories: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    language: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

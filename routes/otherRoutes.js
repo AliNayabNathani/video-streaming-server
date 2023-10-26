@@ -10,10 +10,7 @@ const {
   rentVideo,
 } = require("../controllers/otherController");
 
-const {
-  authenticateUser,
-  authorizePermission,
-} = require("../middleware/authentication");
+const { authenticateUser } = require("../middleware/authentication");
 
 const router = express.Router();
 
@@ -22,7 +19,8 @@ router
   .post(authenticateUser, postComment)
   .get(getComments);
 
-router.route("/uploadVideo").post(authenticateUser, uploadVideo);
+router.route("/uploadVideo").post(uploadVideo);
+
 router.route("/uploadPicture").post(uploadVideoPoster);
 
 // Generate OTP and store it in the database

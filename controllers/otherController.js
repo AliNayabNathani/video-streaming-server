@@ -70,11 +70,13 @@ const getComments = async (req, res) => {
 };
 
 const uploadVideo = async (req, res) => {
+  console.log(req);
+
   if (!req.files) {
     throw new CustomError.BadRequestError("No File Uploaded");
   }
 
-  const videoFile = req.files.video;
+  const videoFile = req.files.Video;
 
   if (!videoFile.mimetype.startsWith("video")) {
     throw new CustomError.BadRequestError("Video Files Only!");
@@ -99,15 +101,16 @@ const uploadVideo = async (req, res) => {
 };
 
 const uploadVideoPoster = async (req, res) => {
+  console.log(req);
   if (!req.body) {
     throw new CustomError.BadRequestError("No File Uploaded");
   }
   const videoPoster = req.files.image;
-  if (!videoPoster.mimetype.startsWith("image")) {
+  if (!videoPoster?.mimetype?.startsWith("image")) {
     throw new CustomError.BadRequestError("Image Files Only!");
   }
 
-  const maxSize = 1024 * 1024 * 5; //5MB
+  const maxSize = 1024 * 1024 * 20; //5MB
   if (videoPoster.size > maxSize) {
     throw new CustomError.BadRequestError("Max Image Size Should be 5mb");
   }

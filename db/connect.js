@@ -2,7 +2,7 @@ const { Pool } = require("pg");
 
 const dbConfig = {
   user: "postgres",
-  host: "127.0.0.1",
+  host: "localhost",
   database: "videoserver",
   password: "admin",
   port: 5432,

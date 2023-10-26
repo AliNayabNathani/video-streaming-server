@@ -9,7 +9,14 @@ const {
     AllChannels,
     createProfile,
     getProfiles,
-    getDevice
+    addDevice,
+    getDevice,
+    TermsandConditions,
+    privacyPolicy,
+    GetMovies,
+    GetSeries,
+    sendTestMailToSupport,
+    sendTestMailToUser
 } = require('../controllers/userController');
 
 const router = express.Router();
@@ -20,5 +27,20 @@ router.route('/createProfile').post(authenticateUser, createProfile);
 
 router.route('/getProfiles').get(authenticateUser, getProfiles);
 
-router.route('/getDevice/:id').get(authenticateUser, getDevice);
+router.route('/addDevice').post(authenticateUser, addDevice);
+
+router.route('/getDevice').get(authenticateUser, getDevice);
+
+router.route('/gettTerms').get(authenticateUser, TermsandConditions);
+
+router.route('/getPrivacy').get(authenticateUser, privacyPolicy);
+
+router.route('/getMovies').get(authenticateUser, GetMovies);
+
+router.route('/getSeries').get(authenticateUser, GetSeries);
+
+router.route('/sendTestMailToSupport').post(authenticateUser, sendTestMailToSupport);
+
+router.route('/sendTestMailToUser').post(authenticateUser, sendTestMailToUser);
+
 module.exports = router;

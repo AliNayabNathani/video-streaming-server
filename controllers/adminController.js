@@ -411,7 +411,7 @@ const listVideosByContentCreator = async (req, res) => {
 };
 
 const updateTermsAndConditions = async (req, res) => {
-  const updatedDescription = req.body.updatedDescription;
+  const { updatedDescription } = req.body;
 
   const termsAndConditionsItem = await ContentManagement.findOne({
     where: { name: "Terms And Conditions" },

@@ -6,6 +6,9 @@ const expressip = require("express-ip");
 //express
 const express = require("express");
 const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
+const server = http.createServer(app);
 
 //rest of the packages
 const path = require("path");
@@ -48,8 +51,8 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 app.use(
   cors({
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    origin: ["http://127.0.0.1:3000", "http://127.0.0.1:3001"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
   })
 );
 app.use(xss());
@@ -65,6 +68,8 @@ app.use(expressip().getIpInfoMiddleware);
 
 // app.use(express.static("./public"));
 app.use(fileUpload());
+
+
 // app.use(auth(config));
 //routes
 
@@ -76,10 +81,8 @@ app.use(fileUpload());
 //   "public",
 //   express.static(path.join(__dirname, "public"))
 // );
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "public/uploads/posters/"))
-);
+app.use("/uploadPicture", express.static(path.join(__dirname, "public/uploads/posters/")));
+app.use("/uploadVideos", express.static(path.join(__dirname, "public/uploads/vidoes/")));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
@@ -91,6 +94,32 @@ app.use("/api/v1/user", userRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
+
+const io = new Server(server, {
+  cors: {
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+  }
+})
+console.log(server);
+
+io.on("connection", (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+
+  socket.on("join_room", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  });
+
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User Disconnected", socket.id);
+  });
+});
 
 sequelize
   .sync()
@@ -108,7 +137,7 @@ const start = async () => {
     await connectDB();
     console.log("Connected to PostgreSQL database.");
 
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log(`Server listening on port ${port}...`);
     });
   } catch (error) {
