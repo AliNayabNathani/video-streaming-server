@@ -6,8 +6,8 @@ const expressip = require("express-ip");
 //express
 const express = require("express");
 const app = express();
-const http = require('http');
-const { Server } = require('socket.io');
+const http = require("http");
+const { Server } = require("socket.io");
 const server = http.createServer(app);
 
 //rest of the packages
@@ -69,7 +69,6 @@ app.use(expressip().getIpInfoMiddleware);
 // app.use(express.static("./public"));
 app.use(fileUpload());
 
-
 // app.use(auth(config));
 //routes
 
@@ -81,8 +80,14 @@ app.use(fileUpload());
 //   "public",
 //   express.static(path.join(__dirname, "public"))
 // );
-app.use("/uploadPicture", express.static(path.join(__dirname, "public/uploads/posters/")));
-app.use("/uploadVideos", express.static(path.join(__dirname, "public/uploads/vidoes/")));
+app.use(
+  "/uploadPicture",
+  express.static(path.join(__dirname, "public/uploads/posters/"))
+);
+app.use(
+  "/uploadVideos",
+  express.static(path.join(__dirname, "public/uploads/vidoes/"))
+);
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
@@ -100,8 +105,8 @@ const io = new Server(server, {
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     origin: ["http://localhost:3000", "http://localhost:3001"],
-  }
-})
+  },
+});
 console.log(server);
 
 io.on("connection", (socket) => {

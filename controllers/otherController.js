@@ -224,7 +224,7 @@ const purchaseVideo = async (req, res) => {
     confirm: true,
   });
 
-  console.log("mai status hun: ", paymentIntent.status);
+  // console.log("mai status hun: ", paymentIntent.status);
 
   if (paymentIntent.status === "requires_confirmation") {
     const confirmedPaymentIntent = await stripe.paymentIntents.confirm(
