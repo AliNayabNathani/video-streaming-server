@@ -30,9 +30,13 @@ router
   .post(authenticateUser, addNewVideo);
 
 router.route("/mychannels").get(authenticateUser, getMyChannels);
+// router
+//   .route("/mychannel/add")
+//   .post(authenticateUser, createNewChannelWithEpisodes);
+
 router
-  .route("/mychannel/add")
-  .post(authenticateUser, createNewChannelWithEpisodes);
+  .route('/mychannel/add')
+  .post(authenticateUser, createNewChannel);
 
 router
   .route("/get-support")
