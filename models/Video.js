@@ -33,7 +33,7 @@ const Video = sequelize.define(
     },
     views: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
     },
     channelId: {
@@ -71,21 +71,10 @@ const Video = sequelize.define(
     //   allowNull: true,
     //   defaultValue: "English",
     // },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: sequelize.literal(
-        "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
-      ),
-    },
   },
   {
     tableName: "video",
+    timestamps: true,
   }
 );
 

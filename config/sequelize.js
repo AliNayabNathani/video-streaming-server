@@ -1,5 +1,16 @@
 const { Sequelize } = require("sequelize");
 
+// const sequelize = new Sequelize({
+//   dialect: "postgres",
+//   host: "localhost",
+//   port: 5432,
+//   username: "postgres",
+//   password: "inspedium",
+//   database: "videoserver",
+// });
+
+// module.exports = sequelize;
+
 const sequelize = new Sequelize({
   dialect: "postgres",
   host: "dpg-ckhp3a6afg7c73frctsg-a.oregon-postgres.render.com",
