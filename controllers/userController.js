@@ -522,4 +522,5 @@ module.exports = {
   //   getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
+  PreviewSeries
 };

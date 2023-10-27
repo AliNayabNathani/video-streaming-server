@@ -103,21 +103,26 @@ const changeVideoStatus = async (req, res) => {
 };
 
 const addNewVideo = async (req, res) => {
+  console.log(req);
   const {
-    title: videoTitle,
+    videoTitle,
     rented_amount,
     purchasing_amount,
     Genre,
     description,
     Cast,
     Type,
-    trailer: { title: trailerTitle, poster: trailerPoster, file: trailerVideo },
-    episodes: {
-      title: title, poster: poster, file: episodeVideo, description: desc,
-    },
-
+    // trailers: { trailerTitle, trailerPoster, trailerVideo },
+    // episodes: {
+    //   title: title, poster: poster, file: episodeVideo, description: desc,
+    // },
+    filteredTrailers,
+    filteredEpisodes,
   } = req.body;
+  // const trailer = JSON.parse(filteredTrailers); // Parse the JSON string back to an object
+  // const episode = JSON.parse(filteredEpisodes);
 
+  console.log(videoTitle, rented_amount, purchasing_amount, Genre, description, Cast, Type, filteredTrailers, filteredEpisodes);
   const video = await Video.create({
     title: videoTitle || "Video Title",
     rented_amount,
@@ -126,29 +131,27 @@ const addNewVideo = async (req, res) => {
     description,
     Cast,
     Type,
+    status: 'Active',
   });
 
-  const trailer = await Trailer.create({
-    title: trailerTitle || "Trailer Title",
-    file: trailerVideo,
-    poster: trailerPoster,
-    videoId: video.id,
-  });
-
-  const episodes = await Episode.create({
-    title,
-    file,
-    poster: poster || null,
-    description: description || null,
-    videoId: video.id,
-  });
+  if (Array.isArray(trailers)) {
+    for (const trailerData of trailers) {
+      const trailer = await Trailer.create({
+        title: trailerData.trailerTitle || "Trailer Title",
+        file: trailerData.trailerVideo,
+        poster: trailerData.trailerPoster,
+        videoId: video.id,
+      });
+    }
+  }
 
   if (Array.isArray(episodes)) {
     for (const episodeData of episodes) {
       const episode = await Episode.create({
-        title: episodeData.title || "Episode Title",
-        file: episodeData.file,
+        title: episodeData.title,
+        file: episodeData.episodeVideo,
         poster: episodeData.poster,
+        desc: episodeData.desc,
         videoId: video.id,
       });
     }

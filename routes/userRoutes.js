@@ -22,6 +22,7 @@ const {
   //   getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
+  PreviewSeries
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -55,5 +56,5 @@ router.route("/sendTestMailToUser").post(authenticateUser, sendTestMailToUser);
 // router.route("/get-all-channels-videos").get(getAllChannelsAndAll);
 router.route("/add-to-favourite").post(addToFavorites);
 router.route("/allchannels").get(getAllChannelsQuery);
-
+router.route('/getSerie').get(PreviewSeries);
 module.exports = router;
