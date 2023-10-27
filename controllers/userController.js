@@ -545,20 +545,24 @@ const deleteFromFavorites = async (req, res) => {
 
 const PreviewSeries = async (req, res) => {
   const { creatorId, id } = req.query;
-  console.log(id, creatorId);
-
-  const video = await Video.findByPk(id);
-  console.log(video);
+  console.log(creatorId, id)
+  const video = await Video.findByPk(id, {
+    include: [
+      { model: Trailer, as: "trailers" },
+      { model: Episode, as: "episodes" },
+    ],
+  });
+  console.log(video)
   if (!video) {
     throw new CustomError.NotFoundError("Video not found.");
   }
 
   const creator = await ContentCreator.findByPk(creatorId);
-  console.log(creator);
+
   if (!creator) {
     throw new CustomError.NotFoundError("creator not found.");
   }
-  res.status(StatusCodes.OK);
+  res.status(StatusCodes.OK).json({ video, creator, msg: 'Video Extracted' });
 };
 const getRentedVideos = async (req, res) => {
   const { user_id } = req.body;

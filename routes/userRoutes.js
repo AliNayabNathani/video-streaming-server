@@ -22,7 +22,7 @@ const {
   //   getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
-  PreviewSeries
+  PreviewSeries,
   getMyFavorites,
   deleteFromFavorites,
   getRentedVideos,
