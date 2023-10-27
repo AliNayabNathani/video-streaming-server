@@ -23,6 +23,10 @@ const {
   getAllChannelsQuery,
   addToFavorites,
   PreviewSeries
+  getMyFavorites,
+  deleteFromFavorites,
+  getRentedVideos,
+  getPurchasedVideos,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -54,7 +58,15 @@ router.route("/sendTestMailToUser").post(authenticateUser, sendTestMailToUser);
 // router.route("/getAllTvShows").get(getAllChannelsAndSeries);
 // router.route("/getAllMovies").get(getAllChannelsAndMovies);
 // router.route("/get-all-channels-videos").get(getAllChannelsAndAll);
-router.route("/add-to-favourite").post(addToFavorites);
+router
+  .route("/favourites")
+  .post(addToFavorites)
+  .get(getMyFavorites)
+  .delete(deleteFromFavorites);
+
+router.route("/rentedVideos").get(getRentedVideos);
+router.route("/purchasedVideos").get(getPurchasedVideos);
+
 router.route("/allchannels").get(getAllChannelsQuery);
 router.route('/getSerie').get(PreviewSeries);
 module.exports = router;

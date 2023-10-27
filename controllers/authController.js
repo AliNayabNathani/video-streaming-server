@@ -2,9 +2,9 @@ const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const { attachCookiesToResponse, createTokenUser } = require("../utils");
-const device = require('device');
-const userAgentParser = require('ua-parser-js');
-const ipinfo = require('ipinfo');
+const device = require("device");
+const userAgentParser = require("ua-parser-js");
+const ipinfo = require("ipinfo");
 
 const userDevices = {};
 const loginHistory = [];
@@ -54,35 +54,6 @@ const login = async (req, res) => {
 
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
-
-  // Extract and parse the User-Agent header
-  // const userAgent = req.get('User-Agent');
-
-  // const userDevice = device(userAgent);
-
-  // const parsedUserAgent = userAgentParser(userAgent);
-
-  // const deviceInfo = {
-  //   type: userDevice.type,
-  //   isMobile: userDevice.is('phone') || userDevice.is('tablet'),
-  //   model: parsedUserAgent.device.model,
-  //   os: parsedUserAgent.os.name,
-  //   osVersion: parsedUserAgent.os.version,
-  // };
-  // const userId = user.id;
-  // const loginTime = new Date();
-
-  // // const clientIp = req.ipInfo;
-  // const clientIp = '103.244.177.88';
-
-  // const geoData = await ipinfo(clientIp);
-
-  // const location = `${geoData.city}, ${geoData.region}, ${geoData.country}`;
-
-  // // Now, 'location' contains the user's approximate location
-  // console.log('User Location:', location);
-  // userDevices[userId] = { ...deviceInfo, loginTime };
-  // loginHistory.push({ userId, deviceInfo, loginTime });
 
   res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
 };
