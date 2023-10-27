@@ -9,188 +9,183 @@ const Channel = require("../models/Channel");
 const Episode = require("../models/Episodes");
 const Member = require("../models/members");
 const User = require("../models/User");
-const device = require('device');
-const userAgentParser = require('ua-parser-js');
-const ipinfo = require('ipinfo');
+const device = require("device");
+const userAgentParser = require("ua-parser-js");
+const ipinfo = require("ipinfo");
 const Device = require("../models/Device");
 const ContentManagement = require("../models/ContentManagement");
-const { Server } = require('socket.io');
+const { Server } = require("socket.io");
 const { sendEmail } = require("../utils/sendMail");
+const Favourite = require("../models/Favourites");
 
 const AllChannels = async (req, res) => {
-    const channels = await Channel.findAll({
-        raw: true,
-        attributes: ["id", "name", "content_creator_id", "createdAt"],
-    });
-    console.log('channels:', channels);
-    if (!channels || channels.length === 0) {
-        throw new CustomError.NotFoundError(`No Channel found!!`);
-    }
+  const channels = await Channel.findAll({
+    raw: true,
+    attributes: ["id", "name", "content_creator_id", "createdAt"],
+  });
+  console.log("channels:", channels);
+  if (!channels || channels.length === 0) {
+    throw new CustomError.NotFoundError(`No Channel found!!`);
+  }
 
-    const creatorIds = channels.map((channel) => channel.content_creator_id);
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
 
-    const ChannelVideos = await Promise.all(
-        creatorIds.map((id) =>
-            Channel.findAll({
-                where: { content_creator_id: id },
-                attributes: ["id", "name", "content_creator_id"],
-                include: [
-                    {
-                        model: Video,
-                        as: "videos",
-                        attributes: ["id", "name", "views", "Type"],
-                        include: [
-                            {
-                                model: Episode,
-                                as: "episodes",
-                                attributes: ["id", "poster", "file", "title", "description"],
-                            },
-                        ],
-                    },
-                ],
-            })
-        )
-    );
+  const ChannelVideos = await Promise.all(
+    creatorIds.map((id) =>
+      Channel.findAll({
+        where: { content_creator_id: id },
+        attributes: ["id", "name", "content_creator_id"],
+        include: [
+          {
+            model: Video,
+            as: "videos",
+            attributes: ["id", "name", "views", "Type"],
+            include: [
+              {
+                model: Episode,
+                as: "episodes",
+                attributes: ["id", "poster", "file", "title", "description"],
+              },
+            ],
+          },
+        ],
+      })
+    )
+  );
 
-    const channelCount = channels.length;
-    res.status(StatusCodes.OK).json({ ChannelVideos, channelCount });
+  const channelCount = channels.length;
+  res.status(StatusCodes.OK).json({ ChannelVideos, channelCount });
 };
 
 const createProfile = async (req, res) => {
-    const { userName, name, avatar } = req.body;
-    console.log(req.body);
-    const existingUser = await User.findOne({ where: { name: userName } });
-    if (!existingUser) {
-        throw new CustomError.NotFoundError("User Not Found. Create User First");
-    }
-    const member = await Member.create({ name, avatar, user_id: existingUser.id });
-    console.log(member);
-    res
-        .status(StatusCodes.CREATED)
-        .json({ member, msg: "Member Added." });
-}
+  const { userName, name, avatar } = req.body;
+  console.log(req.body);
+  const existingUser = await User.findOne({ where: { name: userName } });
+  if (!existingUser) {
+    throw new CustomError.NotFoundError("User Not Found. Create User First");
+  }
+  const member = await Member.create({
+    name,
+    avatar,
+    user_id: existingUser.id,
+  });
+  console.log(member);
+  res.status(StatusCodes.CREATED).json({ member, msg: "Member Added." });
+};
 
 const getProfiles = async (req, res) => {
-    const members = await Member.findAll({});
-    const memberData = await Promise.all(
-        members.map(async (member) => {
-            return {
-                id: member.id,
-                name: member.name,
-                avatar: member.avatar
-            }
-        })
-    );
-    const memberCount = members.length;
+  const members = await Member.findAll({});
+  const memberData = await Promise.all(
+    members.map(async (member) => {
+      return {
+        id: member.id,
+        name: member.name,
+        avatar: member.avatar,
+      };
+    })
+  );
+  const memberCount = members.length;
 
-    res
-        .status(StatusCodes.OK)
-        .json({ members: memberData, count: memberCount });
+  res.status(StatusCodes.OK).json({ members: memberData, count: memberCount });
 };
 
 const addDevice = async (req, res) => {
-    const { userId } = req.body;
-    console.log('User ID: ', userId);
+  const { userId } = req.body;
+  console.log("User ID: ", userId);
 
-    const userAgent = req.get('User-Agent');
-    const userDevice = device(userAgent);
-    const parsedUserAgent = userAgentParser(userAgent);
-    const deviceInfo = {
-        type: userDevice.type,
-        isMobile: userDevice.is('phone') || userDevice.is('tablet'),
-        model: parsedUserAgent.device.model,
-        os: parsedUserAgent.os.name,
-        osVersion: parsedUserAgent.os.version,
-    };
-    const model = deviceInfo.model || deviceInfo.os;
-    // const clientIp = req.ipInfo;
-    const clientIp = '103.244.177.88';
-    const geoData = await ipinfo(clientIp);
-    const location = `${geoData.city}, ${geoData.region}, ${geoData.country}`;
-    // Now, 'location' contains the user's approximate location
-    console.log('User Location:', location);
-    const existingDevice = await Device.findOne({ where: { model, device_id: userId } })
-    console.log('existing', existingDevice);
-    let newDevice;
-    if (!existingDevice) {
-        newDevice = await Device.create({
-            user_id: userId,
-            model: deviceInfo.model,
-            os: deviceInfo.os,
-            location: location,
-        });
-    }
-    return res
-        .status(StatusCodes.OK)
-        .json({ newDevice, msg: 'Device Info Extracted' })
-}
+  const userAgent = req.get("User-Agent");
+  const userDevice = device(userAgent);
+  const parsedUserAgent = userAgentParser(userAgent);
+  const deviceInfo = {
+    type: userDevice.type,
+    isMobile: userDevice.is("phone") || userDevice.is("tablet"),
+    model: parsedUserAgent.device.model,
+    os: parsedUserAgent.os.name,
+    osVersion: parsedUserAgent.os.version,
+  };
+  const model = deviceInfo.model || deviceInfo.os;
+  // const clientIp = req.ipInfo;
+  const clientIp = "103.244.177.88";
+  const geoData = await ipinfo(clientIp);
+  const location = `${geoData.city}, ${geoData.region}, ${geoData.country}`;
+  // Now, 'location' contains the user's approximate location
+  console.log("User Location:", location);
+  const existingDevice = await Device.findOne({
+    where: { model, device_id: userId },
+  });
+  console.log("existing", existingDevice);
+  let newDevice;
+  if (!existingDevice) {
+    newDevice = await Device.create({
+      user_id: userId,
+      model: deviceInfo.model,
+      os: deviceInfo.os,
+      location: location,
+    });
+  }
+  return res
+    .status(StatusCodes.OK)
+    .json({ newDevice, msg: "Device Info Extracted" });
+};
 
 const getDevice = async (req, res) => {
-    const devices = await Device.findAll({});
+  const devices = await Device.findAll({});
 
-    const deviceData = await Promise.all(
-        devices.map(async (device) => {
-            const user = await User.findByPk(device.user_id);
-            return {
-                model: device.model,
-                os: device.os,
-                location: device.location,
-                updatedAt: device.updatedAt,
-            }
-        })
-    )
+  const deviceData = await Promise.all(
+    devices.map(async (device) => {
+      const user = await User.findByPk(device.user_id);
+      return {
+        model: device.model,
+        os: device.os,
+        location: device.location,
+        updatedAt: device.updatedAt,
+      };
+    })
+  );
 
-    const deviceDataLength = deviceData.length;
+  const deviceDataLength = deviceData.length;
 
-    res
-        .status(StatusCodes.OK)
-        .json({ device: deviceData, count: deviceDataLength });
-}
+  res
+    .status(StatusCodes.OK)
+    .json({ device: deviceData, count: deviceDataLength });
+};
 
 const TermsandConditions = async (req, res) => {
-    const termsAndConditionsItem = await ContentManagement.findOne({
-        where: { name: "Terms And Conditions" },
-    });
+  const termsAndConditionsItem = await ContentManagement.findOne({
+    where: { name: "Terms And Conditions" },
+  });
 
-    res
-        .status(StatusCodes.OK)
-        .json({ termsAndConditionsItem });
-}
+  res.status(StatusCodes.OK).json({ termsAndConditionsItem });
+};
 
 const privacyPolicy = async (req, res) => {
-    const privacyPolicyItem = await ContentManagement.findOne({
-        where: { name: "Privacy Policy" },
-    });
+  const privacyPolicyItem = await ContentManagement.findOne({
+    where: { name: "Privacy Policy" },
+  });
 
-    res
-        .status(StatusCodes.OK)
-        .json({ privacyPolicyItem });
-}
+  res.status(StatusCodes.OK).json({ privacyPolicyItem });
+};
 
 const GetMovies = async (req, res) => {
-    const movies = await Video.findAll({ where: { Type: 'Movie' } });
-    console.log(movies);
-    res
-        .status(StatusCodes.OK)
-        .json({ movies, msg: 'Movies Extracted' });
-}
+  const movies = await Video.findAll({ where: { Type: "Movie" } });
+  console.log(movies);
+  res.status(StatusCodes.OK).json({ movies, msg: "Movies Extracted" });
+};
 
 const GetSeries = async (req, res) => {
-    const Series = await Video.findAll({ where: { Type: 'Series' } });
-    console.log(Series);
-    res
-        .status(StatusCodes.OK)
-        .json({ Series, msg: 'Series Extracted' });
-}
+  const Series = await Video.findAll({ where: { Type: "Series" } });
+  console.log(Series);
+  res.status(StatusCodes.OK).json({ Series, msg: "Series Extracted" });
+};
 
 const sendTestMailToSupport = async (req, res) => {
-    const { userId, complaint } = req.body;
+  const { userId, complaint } = req.body;
 
-    const user = await User.findByPk(userId);
-    console.log(user);
-    const to = 'recipient@example.com';
-    const subject = `Complaint from User ${userId}`;
-    const template = `
+  const user = await User.findByPk(userId);
+  console.log(user);
+  const to = "recipient@example.com";
+  const subject = `Complaint from User ${userId}`;
+  const template = `
     <!DOCTYPE html>
 <html>
 <head>
@@ -239,20 +234,19 @@ const sendTestMailToSupport = async (req, res) => {
 </body>
 </html>`;
 
-    const info = await sendEmail(to, subject, template);
-    console.log(info);
-    res.status(StatusCodes.OK)
-        .send('Email Sent Successfully');
-}
+  const info = await sendEmail(to, subject, template);
+  console.log(info);
+  res.status(StatusCodes.OK).send("Email Sent Successfully");
+};
 
 const sendTestMailToUser = async (req, res) => {
-    const { userId, complaint } = req.body;
+  const { userId, complaint } = req.body;
 
-    const user = await User.findByPk(userId);
-    console.log(user);
-    const to = user.dataValues.email;
-    const subject = `Confirmation: Your Query is Being Addressed`;
-    const template = `
+  const user = await User.findByPk(userId);
+  console.log(user);
+  const to = user.dataValues.email;
+  const subject = `Confirmation: Your Query is Being Addressed`;
+  const template = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -307,22 +301,226 @@ const sendTestMailToUser = async (req, res) => {
     </body>
     </html>
     `;
-    const info = await sendEmail(to, subject, template);
-    console.log(info);
-    res.status(StatusCodes.OK)
-        .send('Email Sent Successfully');
-}
+  const info = await sendEmail(to, subject, template);
+  console.log(info);
+  res.status(StatusCodes.OK).send("Email Sent Successfully");
+};
+
+const getAllChannelsAndSeries = async (req, res) => {
+  const channelsWithSeries = await Channel.findAll({
+    attributes: ["id", "name", "content_creator_id"],
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        attributes: ["id", "name", "views", "Type"],
+        include: [
+          {
+            model: Trailer,
+            as: "trailers",
+            attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: "episodes",
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
+        ],
+        where: {
+          Type: "Series",
+        },
+      },
+    ],
+  });
+
+  if (!channelsWithSeries || channelsWithSeries.length === 0) {
+    throw new CustomError.NotFoundError(`No channels with series found.`);
+  }
+
+  const channelCount = channelsWithSeries.length;
+
+  res
+    .status(StatusCodes.OK)
+    .json({ channels: channelsWithSeries, channelCount });
+};
+
+const getAllChannelsAndMovies = async (req, res) => {
+  const channelsWithMovies = await Channel.findAll({
+    attributes: ["id", "name", "content_creator_id"],
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        attributes: ["id", "name", "views", "Type"],
+        include: [
+          {
+            model: Trailer,
+            as: "trailers",
+            attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: "episodes",
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
+        ],
+        where: {
+          Type: "Movie",
+        },
+      },
+    ],
+  });
+
+  if (!channelsWithMovies || channelsWithMovies.length === 0) {
+    throw new CustomError.NotFoundError(`No channels with Movies found.`);
+  }
+
+  const channelCount = channelsWithMovies.length;
+
+  res
+    .status(StatusCodes.OK)
+    .json({ channels: channelsWithMovies, channelCount });
+};
+
+const getAllChannelsAndAll = async (req, res) => {
+  const channelsWithAll = await Channel.findAll({
+    attributes: ["id", "name", "content_creator_id"],
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        attributes: ["id", "name", "views", "Type"],
+        include: [
+          {
+            model: Trailer,
+            as: "trailers",
+            attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: "episodes",
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!channelsWithAll || channelsWithAll.length === 0) {
+    throw new CustomError.NotFoundError(`No channels with Movies found.`);
+  }
+
+  const channelCount = channelsWithAll.length;
+
+  res.status(StatusCodes.OK).json({ channels: channelsWithAll, channelCount });
+};
+
+const getAllChannelsQuery = async (req, res) => {
+  const { videoType, genre } = req.query;
+  console.log(videoType, genre);
+  let whereClause = {};
+
+  if (videoType) {
+    whereClause.Type = videoType;
+  }
+
+  if (genre) {
+    whereClause.Genre = genre;
+  }
+
+  const channelsWithVideos = await Channel.findAll({
+    attributes: ["id", "name", "content_creator_id"],
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        attributes: ["id", "name", "views", "Type", "Genre"],
+        include: [
+          {
+            model: Trailer,
+            as: "trailers",
+            attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: "episodes",
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
+        ],
+        where: whereClause,
+      },
+    ],
+  });
+
+  // if (!channelsWithVideos || channelsWithVideos.length === 0) {
+  //   throw new CustomError.NotFoundError(`Doesnot Exist`);
+  // }
+
+  const channelCount = channelsWithVideos.length;
+
+  res
+    .status(StatusCodes.OK)
+    .json({ channels: channelsWithVideos, channelCount });
+};
+
+const addToFavorites = async (req, res) => {
+  const { userId, videoId } = req.body;
+
+  console.log(userId, videoId);
+
+  const video = await Video.findByPk(videoId);
+  console.log(video);
+  if (!video) {
+    throw new CustomError.NotFoundError("Video not found.");
+  }
+
+  const existingFavorite = await Favourite.findOne({
+    where: { userId, videoId },
+  });
+
+  if (existingFavorite) {
+    throw new CustomError.BadRequestError("Video already in favorites.");
+  }
+
+  const newFavorite = await Favourite.create({ userId, videoId });
+
+  res.status(StatusCodes.CREATED).json({ favorite: newFavorite });
+};
+
+const PreviewSeries = async (req, res) => {
+  const { creatorId, id } = req.query;
+  console.log(id, creatorId);
+
+  const video = await Video.findByPk(id);
+  console.log(video);
+  if (!video) {
+    throw new CustomError.NotFoundError("Video not found.");
+  }
+
+  const creator = await ContentCreator.findByPk(creatorId);
+  console.log(creator);
+  if (!creator) {
+    throw new CustomError.NotFoundError("creator not found.");
+  }
+  res.status(StatusCodes.OK);
+};
 
 module.exports = {
-    AllChannels,
-    createProfile,
-    getProfiles,
-    addDevice,
-    getDevice,
-    TermsandConditions,
-    privacyPolicy,
-    GetMovies,
-    GetSeries,
-    sendTestMailToSupport,
-    sendTestMailToUser
-}
+  AllChannels,
+  createProfile,
+  getProfiles,
+  addDevice,
+  getDevice,
+  TermsandConditions,
+  privacyPolicy,
+  GetMovies,
+  GetSeries,
+  sendTestMailToSupport,
+  sendTestMailToUser,
+  getAllChannelsAndSeries,
+  getAllChannelsAndMovies,
+  getAllChannelsAndAll,
+  getAllChannelsQuery,
+  addToFavorites,
+  PreviewSeries,
+};
