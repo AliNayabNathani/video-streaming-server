@@ -336,16 +336,17 @@ const getSingleChannelDetail = async (req, res) => {
 const createNewChannel = async (req, res) => {
   const { name } = req.body;
   const userId = req.user.userId;
+  console.log(userId)
   const contentCreator = await ContentCreator.findOne({
     where: {
       user_id: userId,
     },
   });
-
+  console.log(contentCreator);
   if (!contentCreator) {
     throw new CustomError.NotFoundError(`User is not a content creator.`);
   }
-  const content_creator_id = contentCreator.id;
+  const content_creator_id = contentCreator.dataValues.id;
 
   if (!name || !content_creator_id) {
     throw new CustomError.BadRequestError(
@@ -355,7 +356,7 @@ const createNewChannel = async (req, res) => {
 
   const channel = await Channel.create({
     name,
-    contentCreatorId,
+    content_creator_id,
   });
 
   res.status(StatusCodes.CREATED).json({ channel });
