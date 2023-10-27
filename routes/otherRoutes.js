@@ -4,11 +4,13 @@ const {
   getComments,
   uploadVideo,
   uploadVideoPoster,
+  otpController,
+  stripeController,
+  purchaseVideo,
+  rentVideo,
 } = require("../controllers/otherController");
 
-const {
-  authenticateUser,
-} = require("../middleware/authentication");
+const { authenticateUser } = require("../middleware/authentication");
 
 const router = express.Router();
 
@@ -17,10 +19,19 @@ router
   .post(authenticateUser, postComment)
   .get(getComments);
 
-router
-  .route("/uploadVideo")
-  .post(uploadVideo);
+router.route("/uploadVideo").post(uploadVideo);
 
 router.route("/uploadPicture").post(uploadVideoPoster);
+
+// Generate OTP and store it in the database
+router.post("/generate-otp", otpController.generateOTP);
+
+// Verify OTP
+router.post("/verify-otp", otpController.verifyOTP);
+
+// Stripe Payments
+router.post("/stripe", stripeController);
+router.post("/purchase-video", purchaseVideo);
+router.post("/rent-video", rentVideo);
 
 module.exports = router;

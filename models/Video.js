@@ -3,6 +3,8 @@ const sequelize = require("../config/sequelize");
 const Channel = require("./Channel");
 const Trailer = require("./Trailer");
 const Episode = require("./Episodes");
+const Subscription = require("./Subscription");
+const Payment = require("./Payment");
 const ViewsStats = require("./Stats");
 
 const Video = sequelize.define(
@@ -22,11 +24,11 @@ const Video = sequelize.define(
       allowNull: true,
     },
     rented_amount: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.FLOAT,
       allowNull: true,
     },
     purchasing_amount: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.FLOAT,
       allowNull: true,
     },
     views: {
@@ -44,26 +46,27 @@ const Video = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
-    type: {
+    Type: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    cast: {
+    Cast: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    genre: {
+    Genre: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    categories: {
+    category: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    language: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    // language: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    //   defaultValue: "English",
+    // },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -92,6 +95,16 @@ Video.hasMany(Episode, {
   as: "episodes",
 });
 
+// Video.hasMany(Subscription, {
+//   foreignKey: "video_id",
+//   as: "subscriptions",
+// });
+
+Video.hasMany(Payment, {
+  foreignKey: "video_id",
+  as: "payments",
+});
+
 Video.prototype.getChannelDetails = async function () {
   try {
     const videoDetails = await Channel.findByPk(this.channelId);
@@ -101,5 +114,7 @@ Video.prototype.getChannelDetails = async function () {
     throw error;
   }
 };
+
+Video.sync();
 
 module.exports = Video;

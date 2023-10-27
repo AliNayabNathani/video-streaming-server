@@ -5,6 +5,7 @@ const Role = require("./Role");
 const ContentCreator = require("./ContentCreator");
 const Member = require("./members");
 const Device = require("./Device");
+const Payment = require("./Payment");
 
 const User = sequelize.define(
   "User",
@@ -51,16 +52,16 @@ const User = sequelize.define(
     },
   },
   {
-    tableName: 'users',
+    tableName: "users",
     hooks: {
       async beforeCreate(user, options) {
-        if (user.changed('password')) {
+        if (user.changed("password")) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
       },
       async beforeUpdate(user, options) {
-        if (user.changed('password')) {
+        if (user.changed("password")) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
@@ -74,19 +75,29 @@ User.belongsTo(Role, {
   as: "role",
 });
 
+// User.hasMany(Subscription, {
+//   foreignKey: "user_id",
+//   as: "subscriptions",
+// });
+
+User.hasMany(Payment, {
+  foreignKey: "user_id",
+  as: "payments",
+});
+
 User.hasOne(ContentCreator, {
   foreignKey: "user_id",
   as: "contentCreator",
 });
 
 User.hasMany(Member, {
-  foreignKey: 'member_id',
-  as: 'Member'
+  foreignKey: "member_id",
+  as: "Member",
 });
 
 User.hasMany(Device, {
-  foreignKey: 'device_id',
-  as: 'device'
+  foreignKey: "device_id",
+  as: "device",
 });
 // User.beforeCreate(async (user, options) => {
 //   if (user.changed("password")) {
@@ -97,11 +108,6 @@ User.hasMany(Device, {
 
 User.prototype.comparePassword = async function (candidatePassword) {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
-  // console.log("Comparing passwords:");
-  // console.log("candidatePassword:", candidatePassword);
-  // console.log("this.password:", this.password);
-  // console.log("isMatch:", isMatch);
-
   return isMatch;
 };
 

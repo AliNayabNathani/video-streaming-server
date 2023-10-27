@@ -7,7 +7,6 @@ const dbConfig = {
   password: "admin",
   port: 5432,
 };
-
 const connectDB = () => {
   const pool = new Pool(dbConfig);
 

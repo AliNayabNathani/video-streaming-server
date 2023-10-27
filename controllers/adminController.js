@@ -241,15 +241,16 @@ const addSubCategory = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
 };
-
 const getAllContentCreator = async (req, res) => {
   const creators = await ContentCreator.findAll({});
 
   const creatorData = await Promise.all(
     creators.map(async (creator) => {
       const user = await User.findByPk(creator.user_id, {
-        attributes: ["gender"],
+        // attributes: ["gender"],
       });
+
+      const genderValue = user && user.gender ? user.gender : "-";
 
       return {
         id: creator.id,
@@ -257,7 +258,7 @@ const getAllContentCreator = async (req, res) => {
         total_videos: creator.total_videos,
         subscribers: creator.subscribers,
         status: creator.status,
-        gender: user ? user.gender : null,
+        gender: genderValue,
       };
     })
   );

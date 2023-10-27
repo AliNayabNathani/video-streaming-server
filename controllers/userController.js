@@ -306,118 +306,118 @@ const sendTestMailToUser = async (req, res) => {
   res.status(StatusCodes.OK).send("Email Sent Successfully");
 };
 
-const getAllChannelsAndSeries = async (req, res) => {
-  const channelsWithSeries = await Channel.findAll({
-    attributes: ["id", "name", "content_creator_id"],
-    include: [
-      {
-        model: Video,
-        as: "videos",
-        attributes: ["id", "name", "views", "Type"],
-        include: [
-          {
-            model: Trailer,
-            as: "trailers",
-            attributes: ["id", "poster", "file", "title"],
-          },
-          {
-            model: Episode,
-            as: "episodes",
-            attributes: ["id", "poster", "file", "title", "description"],
-          },
-        ],
-        where: {
-          Type: "Series",
-        },
-      },
-    ],
-  });
+// const getAllChannelsAndSeries = async (req, res) => {
+//   const channelsWithSeries = await Channel.findAll({
+//     attributes: ["id", "name", "content_creator_id"],
+//     include: [
+//       {
+//         model: Video,
+//         as: "videos",
+//         attributes: ["id", "name", "views", "Type"],
+//         include: [
+//           {
+//             model: Trailer,
+//             as: "trailers",
+//             attributes: ["id", "poster", "file", "title"],
+//           },
+//           {
+//             model: Episode,
+//             as: "episodes",
+//             attributes: ["id", "poster", "file", "title", "description"],
+//           },
+//         ],
+//         where: {
+//           Type: "Series",
+//         },
+//       },
+//     ],
+//   });
 
-  if (!channelsWithSeries || channelsWithSeries.length === 0) {
-    throw new CustomError.NotFoundError(`No channels with series found.`);
-  }
+//   if (!channelsWithSeries || channelsWithSeries.length === 0) {
+//     throw new CustomError.NotFoundError(`No channels with series found.`);
+//   }
 
-  const channelCount = channelsWithSeries.length;
+//   const channelCount = channelsWithSeries.length;
 
-  res
-    .status(StatusCodes.OK)
-    .json({ channels: channelsWithSeries, channelCount });
-};
+//   res
+//     .status(StatusCodes.OK)
+//     .json({ channels: channelsWithSeries, channelCount });
+// };
 
-const getAllChannelsAndMovies = async (req, res) => {
-  const channelsWithMovies = await Channel.findAll({
-    attributes: ["id", "name", "content_creator_id"],
-    include: [
-      {
-        model: Video,
-        as: "videos",
-        attributes: ["id", "name", "views", "Type"],
-        include: [
-          {
-            model: Trailer,
-            as: "trailers",
-            attributes: ["id", "poster", "file", "title"],
-          },
-          {
-            model: Episode,
-            as: "episodes",
-            attributes: ["id", "poster", "file", "title", "description"],
-          },
-        ],
-        where: {
-          Type: "Movie",
-        },
-      },
-    ],
-  });
+// const getAllChannelsAndMovies = async (req, res) => {
+//   const channelsWithMovies = await Channel.findAll({
+//     attributes: ["id", "name", "content_creator_id"],
+//     include: [
+//       {
+//         model: Video,
+//         as: "videos",
+//         attributes: ["id", "name", "views", "Type"],
+//         include: [
+//           {
+//             model: Trailer,
+//             as: "trailers",
+//             attributes: ["id", "poster", "file", "title"],
+//           },
+//           {
+//             model: Episode,
+//             as: "episodes",
+//             attributes: ["id", "poster", "file", "title", "description"],
+//           },
+//         ],
+//         where: {
+//           Type: "Movie",
+//         },
+//       },
+//     ],
+//   });
 
-  if (!channelsWithMovies || channelsWithMovies.length === 0) {
-    throw new CustomError.NotFoundError(`No channels with Movies found.`);
-  }
+//   if (!channelsWithMovies || channelsWithMovies.length === 0) {
+//     throw new CustomError.NotFoundError(`No channels with Movies found.`);
+//   }
 
-  const channelCount = channelsWithMovies.length;
+//   const channelCount = channelsWithMovies.length;
 
-  res
-    .status(StatusCodes.OK)
-    .json({ channels: channelsWithMovies, channelCount });
-};
+//   res
+//     .status(StatusCodes.OK)
+//     .json({ channels: channelsWithMovies, channelCount });
+// };
 
-const getAllChannelsAndAll = async (req, res) => {
-  const channelsWithAll = await Channel.findAll({
-    attributes: ["id", "name", "content_creator_id"],
-    include: [
-      {
-        model: Video,
-        as: "videos",
-        attributes: ["id", "name", "views", "Type"],
-        include: [
-          {
-            model: Trailer,
-            as: "trailers",
-            attributes: ["id", "poster", "file", "title"],
-          },
-          {
-            model: Episode,
-            as: "episodes",
-            attributes: ["id", "poster", "file", "title", "description"],
-          },
-        ],
-      },
-    ],
-  });
+// const getAllChannelsAndAll = async (req, res) => {
+//   const channelsWithAll = await Channel.findAll({
+//     attributes: ["id", "name", "content_creator_id"],
+//     include: [
+//       {
+//         model: Video,
+//         as: "videos",
+//         attributes: ["id", "name", "views", "Type"],
+//         include: [
+//           {
+//             model: Trailer,
+//             as: "trailers",
+//             attributes: ["id", "poster", "file", "title"],
+//           },
+//           {
+//             model: Episode,
+//             as: "episodes",
+//             attributes: ["id", "poster", "file", "title", "description"],
+//           },
+//         ],
+//       },
+//     ],
+//   });
 
-  if (!channelsWithAll || channelsWithAll.length === 0) {
-    throw new CustomError.NotFoundError(`No channels with Movies found.`);
-  }
+//   if (!channelsWithAll || channelsWithAll.length === 0) {
+//     throw new CustomError.NotFoundError(`No channels with Movies found.`);
+//   }
 
-  const channelCount = channelsWithAll.length;
+//   const channelCount = channelsWithAll.length;
 
-  res.status(StatusCodes.OK).json({ channels: channelsWithAll, channelCount });
-};
+//   res.status(StatusCodes.OK).json({ channels: channelsWithAll, channelCount });
+// };
 
 const getAllChannelsQuery = async (req, res) => {
   const { videoType, genre } = req.query;
-  console.log(videoType, genre);
+
   let whereClause = {};
 
   if (videoType) {
@@ -452,9 +452,15 @@ const getAllChannelsQuery = async (req, res) => {
     ],
   });
 
+<<<<<<< HEAD
   // if (!channelsWithVideos || channelsWithVideos.length === 0) {
   //   throw new CustomError.NotFoundError(`Doesnot Exist`);
   // }
+=======
+  if (!channelsWithVideos || channelsWithVideos.length === 0) {
+    throw new CustomError.NotFoundError(`Doesnot Exist`);
+  }
+>>>>>>> 02a8988ec4c857b2504b9f3a210dcbf0a4998f7c
 
   const channelCount = channelsWithVideos.length;
 
@@ -517,10 +523,9 @@ module.exports = {
   GetSeries,
   sendTestMailToSupport,
   sendTestMailToUser,
-  getAllChannelsAndSeries,
-  getAllChannelsAndMovies,
-  getAllChannelsAndAll,
+  //   getAllChannelsAndSeries,
+  //   getAllChannelsAndMovies,
+  //   getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
-  PreviewSeries,
 };
