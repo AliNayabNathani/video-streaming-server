@@ -104,57 +104,90 @@ const changeVideoStatus = async (req, res) => {
 
 const addNewVideo = async (req, res) => {
   const {
-    title: videoTitle,
+    title,
     rented_amount,
     purchasing_amount,
     Genre,
     description,
     Cast,
     Type,
-    trailer: { title: trailerTitle, poster: trailerPoster, file: trailerVideo },
-    episodes: {
-      title: title, poster: poster, file: episodeVideo, description: desc,
-    },
-
+    channelId,
+    trailers: trailersData,
+    episodes: episodesData,
   } = req.body;
 
+  const requiredFields = [
+    "title",
+    "rented_amount",
+    "purchasing_amount",
+    "Genre",
+    "description",
+    "Cast",
+    "Type",
+    "channelId",
+    "trailers",
+    "episodes",
+  ];
+  const missingFields = requiredFields.filter((field) => !(field in req.body));
+
+  if (missingFields.length > 0) {
+    throw new CustomError.BadRequestError(
+      `Fill All Fields. Missing Fields: ${missingFields.join(", ")}`
+    );
+  }
+
   const video = await Video.create({
-    title: videoTitle || "Video Title",
+    name: title || "Video Title",
+    description,
     rented_amount,
     purchasing_amount,
-    Genre,
-    description,
-    Cast,
+    channelId,
     Type,
+    Cast,
+    Genre,
   });
 
-  const trailer = await Trailer.create({
-    title: trailerTitle || "Trailer Title",
-    file: trailerVideo,
-    poster: trailerPoster,
-    videoId: video.id,
-  });
-
-  const episodes = await Episode.create({
-    title,
-    file,
-    poster: poster || null,
-    description: description || null,
-    videoId: video.id,
-  });
-
-  if (Array.isArray(episodes)) {
-    for (const episodeData of episodes) {
-      const episode = await Episode.create({
-        title: episodeData.title || "Episode Title",
-        file: episodeData.file,
-        poster: episodeData.poster,
+  if (Array.isArray(trailersData)) {
+    for (const trailerData of trailersData) {
+      const trailer = await Trailer.create({
+        title: trailerData.title || "Episode Title",
+        file: trailerData.trailerVideo,
+        poster: trailerData.trailerPoster,
         videoId: video.id,
       });
     }
+  } else {
+    const trailer = await Trailer.create({
+      title: trailersData.title || "Trailer Title",
+      file: trailersData.trailerVideo,
+      poster: trailersData.trailerPoster,
+      videoId: video.id,
+    });
   }
 
-  res.status(StatusCodes.CREATED).json({ video, trailer, episodes });
+  if (Array.isArray(episodesData)) {
+    for (const episodeData of episodesData) {
+      await Episode.create({
+        title: episodeData.title || "Episode Title",
+        file: episodeData.episodeVideo,
+        poster: episodeData.poster,
+        description: episodeData.description || null,
+        videoId: video.id,
+      });
+    }
+  } else {
+    await Episode.create({
+      title: episodesData.title || "Episode Title",
+      file: episodesData.episodeVideo,
+      poster: episodesData.poster,
+      description: episodesData.description || null,
+      videoId: video.id,
+    });
+  }
+
+  res
+    .status(StatusCodes.CREATED)
+    .json({ video, trailers: trailersData, episodes: episodesData });
 };
 
 const addNewEpisodeToVideo = async (req, res) => {
@@ -240,7 +273,7 @@ const getMyChannels = async (req, res) => {
           },
           {
             model: Episode,
-            as: 'episodes',
+            as: "episodes",
             attributes: ["id", "poster", "file", "title", "description"],
           },
         ],
@@ -333,11 +366,10 @@ const createNewChannelWithEpisodes = async (req, res) => {
     where: {
       user_id: userId,
     },
-
   });
-  console.log(contentCreator)
+  console.log(contentCreator);
   if (!contentCreator) {
-    throw new CustomError.NotFoundError("Not Found.")
+    throw new CustomError.NotFoundError("Not Found.");
   }
 
   const channel = await Channel.create({
