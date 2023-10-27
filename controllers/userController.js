@@ -452,15 +452,9 @@ const getAllChannelsQuery = async (req, res) => {
     ],
   });
 
-<<<<<<< HEAD
-  // if (!channelsWithVideos || channelsWithVideos.length === 0) {
-  //   throw new CustomError.NotFoundError(`Doesnot Exist`);
-  // }
-=======
   if (!channelsWithVideos || channelsWithVideos.length === 0) {
     throw new CustomError.NotFoundError(`Doesnot Exist`);
   }
->>>>>>> 02a8988ec4c857b2504b9f3a210dcbf0a4998f7c
 
   const channelCount = channelsWithVideos.length;
 
