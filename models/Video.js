@@ -46,26 +46,27 @@ const Video = sequelize.define(
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
-    type: {
+    Type: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    cast: {
+    Cast: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    genre: {
+    Genre: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    categories: {
+    category: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    language: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    // language: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    //   defaultValue: "English",
+    // },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
