@@ -17,6 +17,8 @@ const ContentManagement = require("../models/ContentManagement");
 const { Server } = require("socket.io");
 const { sendEmail } = require("../utils/sendMail");
 const Favourite = require("../models/Favourites");
+const Subscription = require("../models/Subscription");
+const Payment = require("../models/Payment");
 
 const AllChannels = async (req, res) => {
   const channels = await Channel.findAll({
@@ -487,6 +489,159 @@ const addToFavorites = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ favorite: newFavorite });
 };
 
+const getMyFavorites = async (req, res) => {
+  const { userId } = req.body;
+
+  const favorites = await Favourite.findAll({
+    where: { userId },
+    include: [
+      {
+        model: Video,
+        as: "video",
+        include: [
+          {
+            model: Episode,
+            as: "episodes",
+          },
+          {
+            model: Trailer,
+            as: "trailers",
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!favorites || favorites.length === 0) {
+    throw new CustomError.NotFoundError(`Nothing in Favourites.`);
+  }
+
+  const favoritesCount = await Favourite.count({ where: { userId } });
+
+  res.status(StatusCodes.OK).json({ favorites, favoritesCount });
+};
+
+const deleteFromFavorites = async (req, res) => {
+  const { userId, videoId } = req.body;
+
+  const video = await Video.findByPk(videoId);
+
+  if (!video) {
+    throw new CustomError.NotFoundError("Video not found.");
+  }
+
+  const favoriteToDelete = await Favourite.findOne({
+    where: { userId, videoId },
+  });
+
+  if (!favoriteToDelete) {
+    throw new CustomError.NotFoundError("Favorite not found.");
+  }
+
+  await favoriteToDelete.destroy();
+
+  res.status(StatusCodes.OK).json({ msg: "Removed From Favourites" });
+};
+
+const getRentedVideos = async (req, res) => {
+  const { user_id } = req.body;
+
+  const rented = await Subscription.findAll({
+    attributes: [
+      "id",
+      "user_id",
+      "video_id",
+      "currentPeriodStart",
+      "currentPeriodEnd",
+    ],
+    where: { user_id },
+    include: [
+      {
+        model: Video,
+        as: "video",
+        attributes: [
+          "id",
+          "name",
+          "description",
+          "views",
+          "channelId",
+          "Type",
+          "Cast",
+          "Genre",
+          "category",
+        ],
+        include: [
+          {
+            model: Episode,
+            as: "episodes",
+          },
+          {
+            model: Trailer,
+            as: "trailers",
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!rented || rented.length === 0) {
+    throw new CustomError.NotFoundError(`Nothing in Rented.`);
+  }
+
+  const rentedCount = await Subscription.count({ where: { user_id } });
+
+  res.status(StatusCodes.OK).json({ rented, rentedCount });
+};
+
+const getPurchasedVideos = async (req, res) => {
+  const { user_id } = req.body;
+
+  const purchased = await Payment.findAll({
+    attributes: ["id", "user_id", "video_id"],
+    where: { user_id },
+  });
+
+  if (!purchased || purchased.length === 0) {
+    throw new CustomError.NotFoundError(`Nothing in Purchased.`);
+  }
+
+  const purchasedWithVideos = await Promise.all(
+    purchased.map(async (payment) => {
+      const video = await Video.findByPk(payment.video_id, {
+        attributes: [
+          "id",
+          "name",
+          "description",
+          "views",
+          "channelId",
+          "Type",
+          "Cast",
+          "Genre",
+          "category",
+        ],
+        include: [
+          {
+            model: Episode,
+            as: "episodes",
+          },
+          {
+            model: Trailer,
+            as: "trailers",
+          },
+        ],
+      });
+
+      return { payment, video };
+    })
+  );
+
+  const purchasedCount = purchased.length;
+
+  res
+    .status(StatusCodes.OK)
+    .json({ purchased: purchasedWithVideos, purchasedCount });
+};
+
 module.exports = {
   AllChannels,
   createProfile,
@@ -499,9 +654,10 @@ module.exports = {
   GetSeries,
   sendTestMailToSupport,
   sendTestMailToUser,
-  //   getAllChannelsAndSeries,
-  //   getAllChannelsAndMovies,
-  //   getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
+  getMyFavorites,
+  deleteFromFavorites,
+  getRentedVideos,
+  getPurchasedVideos,
 };

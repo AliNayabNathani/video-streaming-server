@@ -24,10 +24,8 @@ const {
 } = require("../middleware/authentication");
 const router = express.Router();
 
-router.route("/myvideo").get(authenticateUser, MyVideos);
-router
-  .route("/myvideo/add")
-  .post(authenticateUser, addNewVideo);
+router.route("/myvideo").get(MyVideos);
+router.route("/myvideo/add").post(authenticateUser, addNewVideo);
 
 router.route("/mychannels").get(authenticateUser, getMyChannels);
 router
@@ -51,19 +49,13 @@ router
 
 router.route("/trailer/:id").get(authenticateUser, getSingleTrailer);
 
-router
-  .route("/add-episode/:id")
-  .post(authenticateUser, addNewEpisodeToVideo);
+router.route("/add-episode/:id").post(authenticateUser, addNewEpisodeToVideo);
 
 router
   .route("/episodes/:id")
   .get(authenticateUser, getSingleEpisode)
   .delete(authenticateUser, deleteEpisode);
-router
-  .route("/add-trailer/:id")
-  .post(authenticateUser, addNewTrailerToVideo);
-router
-  .route("/feedback/:id")
-  .post(authenticateUser, submitFeedback);
+router.route("/add-trailer/:id").post(authenticateUser, addNewTrailerToVideo);
+router.route("/feedback/:id").post(authenticateUser, submitFeedback);
 
 module.exports = router;

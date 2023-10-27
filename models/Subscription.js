@@ -73,6 +73,9 @@ const Subscription = sequelize.define(
   }
 );
 
+// Subscription model
+Subscription.belongsTo(Video, { foreignKey: "video_id", as: "video" });
+
 Subscription.startCron = () => {
   // Schedule a job to run every day at a specific time (adjust as needed)
   cron.schedule("0 0 * * *", async () => {

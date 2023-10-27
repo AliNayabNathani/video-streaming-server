@@ -59,6 +59,8 @@ const Payment = sequelize.define(
   }
 );
 
+// Payment.belongsTo(Video, { foreignKey: "video_id", as: "video" });
+
 // Payment.sync();
 
 module.exports = Payment;
