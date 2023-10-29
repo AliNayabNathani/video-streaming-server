@@ -84,10 +84,22 @@ app.use(
   "/uploadPicture",
   express.static(path.join(__dirname, "public/uploads/posters/"))
 );
+
 app.use(
   "/uploadVideos",
-  express.static(path.join(__dirname, "public/uploads/vidoes/"))
+  express.static(path.join(__dirname, "public/uploads/videos/"))
 );
+
+// app.use("/uploadVideos", (req, res, next) => {
+//   // Decode the URL to handle both encoded and non-encoded URLs
+//   const decodedURL = decodeURIComponent(req.url);
+//   // Map the URL to the file path
+//   const filePath = path.join(__dirname, "public/uploads/videos", decodedURL);
+//   console.log(filePath);
+
+//   // Use the decoded URL to serve the file
+//   express.static(filePath)(req, res, next);
+// });
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);

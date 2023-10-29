@@ -113,6 +113,7 @@ const addNewVideo = async (req, res) => {
     Cast,
     Type,
     channelId,
+    category,
     trailers: trailersData,
     episodes: episodesData,
   } = req.body;
@@ -130,6 +131,7 @@ const addNewVideo = async (req, res) => {
     "channelId",
     "trailers",
     "episodes",
+    "category",
   ];
   const missingFields = requiredFields.filter((field) => !(field in req.body));
 
@@ -148,6 +150,7 @@ const addNewVideo = async (req, res) => {
     Type,
     Cast,
     Genre,
+    category,
   });
 
   if (Array.isArray(trailersData)) {
@@ -336,7 +339,7 @@ const getSingleChannelDetail = async (req, res) => {
 const createNewChannel = async (req, res) => {
   const { name } = req.body;
   const userId = req.user.userId;
-  console.log(userId)
+  console.log(userId);
   const contentCreator = await ContentCreator.findOne({
     where: {
       user_id: userId,
