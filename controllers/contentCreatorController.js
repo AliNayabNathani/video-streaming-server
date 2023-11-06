@@ -515,6 +515,7 @@ const getSingleEpisode = async (req, res) => {
 
 const getSingleTrailer = async (req, res) => {
   const { id: trailerId } = req.params;
+  const { userId } = req.body;
   const trailer = await Trailer.findByPk(trailerId);
 
   if (!trailer) {
@@ -522,7 +523,7 @@ const getSingleTrailer = async (req, res) => {
   }
 
   const episodeId = 0;
-  await recordView(req.user.userId, trailer.videoId, trailer.id, episodeId);
+  await recordView(userId, trailer.videoId, trailer.id, episodeId);
 
   res.status(StatusCodes.OK).json({ trailer });
 };

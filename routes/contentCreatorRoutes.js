@@ -32,9 +32,7 @@ router.route("/mychannels").get(authenticateUser, getMyChannels);
 //   .route("/mychannel/add")
 //   .post(authenticateUser, createNewChannelWithEpisodes);
 
-router
-  .route('/mychannel/add')
-  .post(authenticateUser, createNewChannel);
+router.route("/mychannel/add").post(authenticateUser, createNewChannel);
 
 router
   .route("/get-support")
@@ -57,7 +55,7 @@ router.route("/add-episode/:id").post(authenticateUser, addNewEpisodeToVideo);
 
 router
   .route("/episodes/:id")
-  .get(authenticateUser, getSingleEpisode)
+  .get(getSingleEpisode)
   .delete(authenticateUser, deleteEpisode);
 router.route("/add-trailer/:id").post(authenticateUser, addNewTrailerToVideo);
 router.route("/feedback/:id").post(authenticateUser, submitFeedback);

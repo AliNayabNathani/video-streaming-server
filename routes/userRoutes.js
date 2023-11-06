@@ -27,6 +27,7 @@ const {
   deleteFromFavorites,
   getRentedVideos,
   getPurchasedVideos,
+  getVideoStatus,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -66,7 +67,8 @@ router
 
 router.route("/rentedVideos").get(getRentedVideos);
 router.route("/purchasedVideos").get(getPurchasedVideos);
-
+router.route("/checkVideoStatus").get(getVideoStatus);
 router.route("/allchannels").get(getAllChannelsQuery);
-router.route('/getSerie').get(PreviewSeries);
+router.route("/getSerie").get(PreviewSeries);
+
 module.exports = router;

@@ -454,9 +454,9 @@ const getAllChannelsQuery = async (req, res) => {
     ],
   });
 
-  if (!channelsWithVideos || channelsWithVideos.length === 0) {
-    throw new CustomError.NotFoundError(`Doesnot Exist`);
-  }
+  // if (!channelsWithVideos || channelsWithVideos.length === 0) {
+  //   throw new CustomError.BadRequestError(`Doesnot Exist`);
+  // }
 
   const channelCount = channelsWithVideos.length;
 
@@ -544,26 +544,44 @@ const deleteFromFavorites = async (req, res) => {
 };
 
 const PreviewSeries = async (req, res) => {
-  const { creatorId, id } = req.query;
-  console.log(creatorId, id)
+  const { id } = req.query;
+  console.log(id);
   const video = await Video.findByPk(id, {
     include: [
       { model: Trailer, as: "trailers" },
       { model: Episode, as: "episodes" },
     ],
   });
-  console.log(video)
+
   if (!video) {
     throw new CustomError.NotFoundError("Video not found.");
   }
 
-  const creator = await ContentCreator.findByPk(creatorId);
+  const channelId = video.channelId;
+  console.log(channelId);
+  const channel = await Channel.findByPk(channelId);
 
-  if (!creator) {
-    throw new CustomError.NotFoundError("creator not found.");
+  if (!channel) {
+    throw new CustomError.NotFoundError("Channel not found.");
   }
-  res.status(StatusCodes.OK).json({ video, creator, msg: 'Video Extracted' });
+
+  const contentCreator = await ContentCreator.findByPk(
+    channel.content_creator_id
+  );
+
+  if (!contentCreator) {
+    throw new CustomError.NotFoundError("Content Creator not found.");
+  }
+
+  res.status(StatusCodes.OK).json({
+    video,
+    contentCreator,
+    msg: "Video and Content Creator Extracted",
+  });
 };
+
+// Make sure to import necessary modules (CustomError, StatusCodes, models) in your actual code.
+
 const getRentedVideos = async (req, res) => {
   const { user_id } = req.body;
 
@@ -663,6 +681,54 @@ const getPurchasedVideos = async (req, res) => {
     .json({ purchased: purchasedWithVideos, purchasedCount });
 };
 
+const getVideoStatus = async (req, res) => {
+  const { id, userId } = req.query;
+
+  try {
+    const videoStatus = await determineVideoStatus(id, userId);
+
+    res.status(200).json({ status: videoStatus });
+  } catch (error) {
+    console.error("Error getting video status:", error);
+
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const determineVideoStatus = async (videoId, userId) => {
+  try {
+    const payment = await Payment.findOne({
+      where: {
+        video_id: videoId,
+        user_id: userId,
+        status: "succeeded",
+      },
+    });
+
+    if (payment) {
+      return "purchased";
+    }
+
+    const subscription = await Subscription.findOne({
+      where: {
+        video_id: videoId,
+        user_id: userId,
+        status: "active",
+      },
+    });
+
+    if (subscription) {
+      return "rented";
+    }
+
+    return "none";
+  } catch (error) {
+    console.error("Error determining video status:", error);
+
+    return "none";
+  }
+};
+
 module.exports = {
   AllChannels,
   createProfile,
@@ -682,4 +748,5 @@ module.exports = {
   deleteFromFavorites,
   getRentedVideos,
   getPurchasedVideos,
+  getVideoStatus,
 };

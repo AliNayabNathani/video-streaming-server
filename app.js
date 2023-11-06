@@ -12,7 +12,6 @@ const server = http.createServer(app);
 
 //rest of the packages
 const path = require("path");
-// const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 const rateLimiter = require("express-rate-limit");
@@ -46,7 +45,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 //     max: 60,
 //   })
 // );
-// app.use(helmet());
+app.use(helmet());
 
 app.use(
   cors({
@@ -56,8 +55,6 @@ app.use(
   })
 );
 app.use(xss());
-
-// app.use(morgan('tiny'));
 
 //access to json data in req.body
 app.use(express.json());
@@ -72,14 +69,6 @@ app.use(fileUpload());
 // app.use(auth(config));
 //routes
 
-// app.get("/", (req, res) => {
-//   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
-// });
-
-// app.use(
-//   "public",
-//   express.static(path.join(__dirname, "public"))
-// );
 app.use(
   "/uploadPicture",
   express.static(path.join(__dirname, "public/uploads/posters/"))
@@ -89,17 +78,6 @@ app.use(
   "/uploadVideos",
   express.static(path.join(__dirname, "public/uploads/videos/"))
 );
-
-// app.use("/uploadVideos", (req, res, next) => {
-//   // Decode the URL to handle both encoded and non-encoded URLs
-//   const decodedURL = decodeURIComponent(req.url);
-//   // Map the URL to the file path
-//   const filePath = path.join(__dirname, "public/uploads/videos", decodedURL);
-//   console.log(filePath);
-
-//   // Use the decoded URL to serve the file
-//   express.static(filePath)(req, res, next);
-// });
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", adminRouter);
