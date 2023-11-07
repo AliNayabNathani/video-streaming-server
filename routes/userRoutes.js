@@ -62,7 +62,7 @@ router.route("/sendTestMailToUser").post(authenticateUser, sendTestMailToUser);
 router
   .route("/favourites")
   .post(addToFavorites)
-  .get(getMyFavorites)
+  .get(authenticateUser, getMyFavorites)
   .delete(deleteFromFavorites);
 
 router.route("/rentedVideos").get(getRentedVideos);

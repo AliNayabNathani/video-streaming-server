@@ -490,8 +490,8 @@ const addToFavorites = async (req, res) => {
 };
 
 const getMyFavorites = async (req, res) => {
-  const { userId } = req.body;
-
+  const userId = req.user.userId;
+  // console.log("IM USER", userId);
   const favorites = await Favourite.findAll({
     where: { userId },
     include: [

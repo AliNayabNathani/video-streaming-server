@@ -55,7 +55,7 @@ router.route("/add-episode/:id").post(authenticateUser, addNewEpisodeToVideo);
 
 router
   .route("/episodes/:id")
-  .get(getSingleEpisode)
+  .get(authenticateUser, getSingleEpisode)
   .delete(authenticateUser, deleteEpisode);
 router.route("/add-trailer/:id").post(authenticateUser, addNewTrailerToVideo);
 router.route("/feedback/:id").post(authenticateUser, submitFeedback);
