@@ -729,6 +729,22 @@ const determineVideoStatus = async (videoId, userId) => {
   }
 };
 
+const getUniqueGenre = async (req, res) => {
+  const uniqueGenres = await Video.findAll({
+    attributes: [
+      [Video.sequelize.fn("DISTINCT", Video.sequelize.col("Genre")), "Genre"],
+    ],
+    where: {
+      Genre: {
+        [Op.not]: null,
+      },
+    },
+  });
+
+  const categories = uniqueGenres.map((video) => video.Genre);
+
+  res.json({ categories });
+};
 module.exports = {
   AllChannels,
   createProfile,
@@ -749,4 +765,5 @@ module.exports = {
   getRentedVideos,
   getPurchasedVideos,
   getVideoStatus,
+  getUniqueGenre,
 };

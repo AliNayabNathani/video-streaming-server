@@ -28,6 +28,7 @@ const {
   getRentedVideos,
   getPurchasedVideos,
   getVideoStatus,
+  getUniqueGenre,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -70,5 +71,6 @@ router.route("/purchasedVideos").get(getPurchasedVideos);
 router.route("/checkVideoStatus").get(getVideoStatus);
 router.route("/allchannels").get(getAllChannelsQuery);
 router.route("/getSerie").get(PreviewSeries);
+router.route("/getGenres").get(getUniqueGenre);
 
 module.exports = router;
