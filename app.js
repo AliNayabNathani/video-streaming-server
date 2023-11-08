@@ -51,7 +51,13 @@ app.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://video-streaming-three.vercel.app",
+      "https://video-streaming-git-main-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-kppw5b9vz-nayabnathani6-gmailcom.vercel.app",
+    ],
   })
 );
 app.use(xss());
@@ -94,7 +100,13 @@ const io = new Server(server, {
   cors: {
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://video-streaming-three.vercel.app",
+      "https://video-streaming-git-main-nayabnathani6-gmailcom.vercel.app",
+      "https://video-streaming-kppw5b9vz-nayabnathani6-gmailcom.vercel.app",
+    ],
   },
 });
 console.log(server);
