@@ -3,7 +3,7 @@ const sequelize = require("../config/sequelize");
 const bcrypt = require("bcryptjs");
 const Role = require("./Role");
 const ContentCreator = require("./ContentCreator");
-const Member = require("./members");
+const Member = require("./Members");
 const Device = require("./Device");
 const Payment = require("./Payment");
 
