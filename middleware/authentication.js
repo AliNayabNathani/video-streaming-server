@@ -31,6 +31,7 @@ const authenticateUser = async (req, res, next) => {
 
 const authorizePermission = (...allowedRoleNames) => {
   return async (req, res, next) => {
+    console.log("ME ROLE:", req.user.roldId);
     const roleId = req.user.roleId;
 
     const role = await Role.findByPk(roleId);

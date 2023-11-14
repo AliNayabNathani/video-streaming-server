@@ -109,7 +109,7 @@ const io = new Server(server, {
     ],
   },
 });
-console.log(server);
+// console.log(server);
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);

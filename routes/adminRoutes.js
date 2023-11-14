@@ -10,6 +10,7 @@ const {
   addNewUser,
   addNewCoupon,
   getAllCoupons,
+  deleteCoupon,
   addCategory,
   addSubCategory,
   updateTermsAndConditions,
@@ -38,6 +39,10 @@ const {
   getAllCategories,
   getAllCategoryAndSubCategoryCsv,
   getAllContentCreatorCsv,
+  changeVideoStatus,
+  getSingleVideo,
+  deleteSingleVideo,
+  changeCouponStatus,
 } = require("../controllers/adminController");
 const {
   authorizePermission,
@@ -45,34 +50,22 @@ const {
 } = require("../middleware/authentication");
 
 //get All Users
-router
-  .route("/")
-  .get(authenticateUser, getAllUsers);
+router.route("/").get(authenticateUser, getAllUsers);
 
 //export user csv
-router
-  .route("/export-users-csv")
-  .get(authenticateUser, UserExportCsv);
+router.route("/export-users-csv").get(authenticateUser, UserExportCsv);
 
 //Add New User
-router
-  .route("/add-new-user")
-  .post(authenticateUser, addNewUser);
+router.route("/add-new-user").post(authenticateUser, addNewUser);
 
 //Add Coupon
-router
-  .route("/add-new-coupon")
-  .post(authenticateUser, addNewCoupon);
+router.route("/add-new-coupon").post(authenticateUser, addNewCoupon);
 
 //Get Coupon
-router
-  .route("/get-coupons")
-  .get(authenticateUser, getAllCoupons);
+router.route("/get-coupons").get(authenticateUser, getAllCoupons);
 
 //Add Content Creators
-router
-  .route("/add-content-creator")
-  .post(authenticateUser, addContentCreator);
+router.route("/add-content-creator").post(authenticateUser, addContentCreator);
 
 //Get Content Creators
 router
@@ -89,19 +82,13 @@ router
   );
 
 //Add Category
-router
-  .route("/add-category")
-  .post(authenticateUser, addCategory);
+router.route("/add-category").post(authenticateUser, addCategory);
 
 //Add Sub Category
-router
-  .route("/add-sub-category")
-  .post(authenticateUser, addSubCategory);
+router.route("/add-sub-category").post(authenticateUser, addSubCategory);
 
 //Content Management Module
-router
-  .route("/get-all-content")
-  .get(authenticateUser, getAllContent);
+router.route("/get-all-content").get(authenticateUser, getAllContent);
 router
   .route("/terms-and-conditions")
   .put(authenticateUser, authorizePermission("1"), updateTermsAndConditions);
@@ -113,29 +100,19 @@ router
   .put(authenticateUser, authorizePermission("1"), updateAboutUs);
 
 //Get all sub-categories
-router
-  .route("/get-all-category")
-  .get(authenticateUser, getAllCategories);
+router.route("/get-all-category").get(authenticateUser, getAllCategories);
 
 //Get all sub-categories
-router
-  .route("/get-all-subcategory")
-  .get(authenticateUser, getSubCategory);
+router.route("/get-all-subcategory").get(authenticateUser, getSubCategory);
 
 //Get All Channels
-router
-  .route("/channels")
-  .get(authenticateUser, getAllChannels);
+router.route("/channels").get(authenticateUser, getAllChannels);
 
 //Get Content Approval
-router
-  .route("/content-approval")
-  .get(authenticateUser, GetContentApproval);
+router.route("/content-approval").get(authenticateUser, GetContentApproval);
 
 //Get All Videos
-router
-  .route("/videos")
-  .get(authenticateUser, getAllVideos);
+router.route("/videos").get(authenticateUser, getAllVideos);
 
 //Get All Cat and Sub Cat
 router
@@ -156,9 +133,7 @@ router
   );
 
 //Get All Channels
-router
-  .route("/channel/:id")
-  .get(authenticateUser, getSingleChannel);
+router.route("/channel/:id").get(authenticateUser, getSingleChannel);
 
 //Get or Delete ContentCreator
 router
@@ -184,23 +159,32 @@ router
     editContentCreatorTable
   );
 
-//change change status
-router
-  .route("/:id/active-channel")
-  .put(
-    authenticateUser,
-    authorizePermission("1", "3"),
-    changeChannelActiveStatus
-  );
+//change channel status
+router.route("/:id/active-channel").put(
+  // authenticateUser,
+  // authorizePermission("1", "3"),
+  changeChannelActiveStatus
+);
+
+//change video Status
+router.route("/:id/active-video").put(
+  // authenticateUser,
+  // authorizePermission("1", "3"),
+  changeVideoStatus
+);
+
+//get singe video
+router.route("/video/:id").get(getSingleVideo).delete(deleteSingleVideo);
 
 //Set Content Creator Status
-router
-  .route("/:id/active-contentcreator")
-  .put(
-    authenticateUser,
-    authorizePermission("1", "3"),
-    changeContentCreatorActiveStatus
-  );
+router.route("/:id/active-contentcreator").put(
+  // authenticateUser,
+  // authorizePermission("1", "3"),
+  changeContentCreatorActiveStatus
+);
+
+//Delete Coupon
+router.route("/coupon/:id").delete(deleteCoupon).put(changeCouponStatus);
 
 //Get or Delete Category
 router
@@ -214,14 +198,10 @@ router
   .put(authenticateUser, authorizePermission("1"), editCategoryTable);
 
 //reject content
-router
-  .route("/content/:id/reject")
-  .post(authenticateUser, rejectContent);
+router.route("/content/:id/reject").post(authenticateUser, rejectContent);
 
 //accept
-router
-  .route("/content/:id/accept")
-  .post(authenticateUser, acceptContent);
+router.route("/content/:id/accept").post(authenticateUser, acceptContent);
 
 //change Channel status
 // router.route("/channel/:id/active").put(changeChannelActiveStatus);
@@ -236,8 +216,6 @@ router
 router.route("/:id/active").put(changeActiveStatus);
 
 // Edit User Information
-router
-  .route("/:id/edit")
-  .put(authenticateUser, editUserTable);
+router.route("/:id/edit").put(authenticateUser, editUserTable);
 
 module.exports = router;

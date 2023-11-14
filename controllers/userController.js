@@ -583,7 +583,7 @@ const PreviewSeries = async (req, res) => {
 // Make sure to import necessary modules (CustomError, StatusCodes, models) in your actual code.
 
 const getRentedVideos = async (req, res) => {
-  const { user_id } = req.body;
+  const userId = req.user.userId;
 
   const rented = await Subscription.findAll({
     attributes: [
@@ -633,7 +633,7 @@ const getRentedVideos = async (req, res) => {
 };
 
 const getPurchasedVideos = async (req, res) => {
-  const { user_id } = req.body;
+  const userId = req.user.userId;
 
   const purchased = await Payment.findAll({
     attributes: ["id", "user_id", "video_id"],

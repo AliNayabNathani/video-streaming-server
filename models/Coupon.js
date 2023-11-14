@@ -4,9 +4,14 @@ const sequelize = require("../config/sequelize");
 const Coupon = sequelize.define(
   "Coupons",
   {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     name: {
       type: DataTypes.STRING,
-      primaryKey: true,
+      // primaryKey: true,
       allowNull: false,
     },
     value: {
@@ -24,6 +29,10 @@ const Coupon = sequelize.define(
     max_redemptions: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("Active", "InActive"),
+      defaultValue: "Active",
     },
   },
   {

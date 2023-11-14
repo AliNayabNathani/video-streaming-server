@@ -67,7 +67,8 @@ const logout = async (req, res) => {
 };
 
 const updatePassword = async (req, res) => {
-  const { oldPassword, newPassword, userId } = req.body;
+  const userId = req.user.userId;
+  const { oldPassword, newPassword } = req.body;
 
   if (!oldPassword || !newPassword) {
     return res
@@ -96,10 +97,12 @@ const updatePassword = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+  const userId = req.user.userId;
   const { name, email, mobile_number } = req.body;
-  const userId = req.user.id;
+  console.log(req.body);
 
   const user = await User.findByPk(userId);
+  console.log("FOUND", user);
   if (name) {
     user.name = name;
   }

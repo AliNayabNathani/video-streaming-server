@@ -15,6 +15,8 @@ const ViewsStats = sequelize.define(
       references: {
         model: "users",
         key: "id",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
     },
     video_id: {
@@ -23,6 +25,8 @@ const ViewsStats = sequelize.define(
       references: {
         model: "video",
         key: "id",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
     },
     episode_id: {
@@ -32,6 +36,8 @@ const ViewsStats = sequelize.define(
       references: {
         model: "episode",
         key: "id",
+        onDelete: "CASCADE", // ON DELETE CASCADE
+        onUpdate: "CASCADE", // ON UPDATE CASCADE
       },
     },
     trailer_id: {
@@ -41,6 +47,8 @@ const ViewsStats = sequelize.define(
       references: {
         model: "trailer",
         key: "id",
+        onDelete: "CASCADE", // ON DELETE CASCADE
+        onUpdate: "CASCADE", // ON UPDATE CASCADE
       },
     },
   },

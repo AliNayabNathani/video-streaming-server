@@ -2,6 +2,8 @@ const User = require("../models/User");
 const Role = require("../models/Role");
 const ContentCreator = require("../models/ContentCreator");
 const Channel = require("../models/Channel");
+const Episodes = require("../models/Episodes");
+const Trailer = require("../models/Trailer");
 const Coupon = require("../models/Coupon");
 const Category = require("../models/Category");
 const SubCategory = require("../models/SubCategory");
@@ -18,6 +20,10 @@ const {
 const { STATUS_CODES } = require("http");
 const Video = require("../models/Video");
 const ContentApproval = require("../models/ContentApproval");
+const Episode = require("../models/Episodes");
+const ViewsStats = require("../models/Stats");
+const Subscription = require("../models/Subscription");
+const Payment = require("../models/Payment");
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -170,6 +176,10 @@ const addNewUser = async (req, res) => {
 const addNewCoupon = async (req, res) => {
   const { name, value, desc, max_value, max_redemptions } = req.body;
 
+  if ((!name, !value)) {
+    throw new CustomError.BadRequestError("Please Fill Required Fields.");
+  }
+
   const existingCoupon = await Coupon.findOne({ where: { name } });
   if (existingCoupon) {
     throw new CustomError.BadRequestError("Coupon already exists");
@@ -197,11 +207,48 @@ const getAllCoupons = async (req, res) => {
   res.status(StatusCodes.OK).json({ coupons, count: couponCount });
 };
 
+const deleteCoupon = async (req, res) => {
+  const couponName = req.params.id;
+
+  const existingCoupon = await Coupon.findByPk(couponName);
+
+  if (!existingCoupon) {
+    throw new CustomError.NotFoundError("Coupon not found");
+  }
+
+  await existingCoupon.destroy();
+
+  res.status(StatusCodes.OK).json({ msg: "Coupon successfully deleted" });
+};
+
+const changeCouponStatus = async (req, res) => {
+  const couponName = req.params.id;
+
+  const couponToChange = await Coupon.findByPk(couponName);
+
+  if (!couponToChange) {
+    throw new CustomError.NotFoundError(
+      `No Coupon found with name ${couponName}`
+    );
+  }
+
+  // checkPermissions(requestUser, userToChange.id);
+
+  couponToChange.status =
+    couponToChange.status === "Active" ? "InActive" : "Active";
+  await couponToChange.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Status Changed", coupon: couponToChange });
+};
+
 const addCategory = async (req, res) => {
   const { name, desc } = req.body;
   console.log(name, desc);
 
   const existingCategory = await Category.findOne({ where: { name } });
+
   if (existingCategory) {
     throw new CustomError.BadRequestError("Category already exists");
   }
@@ -241,6 +288,7 @@ const addSubCategory = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: "Sub Category Added Successfully" });
 };
+
 const getAllContentCreator = async (req, res) => {
   const creators = await ContentCreator.findAll({});
 
@@ -313,12 +361,22 @@ const getAllContentCreatorCsv = async (req, res) => {
 
 const addContentCreator = async (req, res) => {
   const { name, gender, mobile_number } = req.body;
-  //also add mobile after uncommenting in model
-  const existingUser = await User.findOne({ where: { name } });
-  // console.log("i exist: ", existingUser);
+  const existingUser = await User.findOne({ where: { mobile_number, name } });
+
   if (!existingUser) {
     throw new CustomError.NotFoundError("User Not Found. Create User First");
   }
+
+  const existingContentCreator = await ContentCreator.findOne({
+    where: { name, user_id: existingUser.id },
+  });
+
+  if (existingContentCreator) {
+    throw new CustomError.BadRequestError(
+      "Content Creator with this name already exists."
+    );
+  }
+
   const contentCreator = await ContentCreator.create({
     name,
     user_id: existingUser.id,
@@ -582,7 +640,7 @@ const editContentCreatorTable = async (req, res) => {
 const changeContentCreatorActiveStatus = async (req, res) => {
   const { id: contentCreatorIdToChange } = req.params;
   // const { ContentCreator: requestContentCreator } = req;
-
+  console.log("ID IN PARAMS", contentCreatorIdToChange);
   const contentCreatorToChange = await ContentCreator.findByPk(
     contentCreatorIdToChange
   );
@@ -615,8 +673,6 @@ const changeChannelActiveStatus = async (req, res) => {
       `No Channel found with id ${channelIdToChange}`
     );
   }
-
-  // checkPermissions(requestUser, userToChange.id);
 
   channelToChange.status =
     channelToChange.status === "Active" ? "InActive" : "Active";
@@ -670,21 +726,26 @@ const getAllChannels = async (req, res) => {
 const getSingleChannel = async (req, res) => {
   const channelId = req.params.id;
 
-  const channel = await Channel.findByPk(channelId);
-  const videos = await Video.findAll({
-    where: { channelId: channel.id },
+  const channel = await Channel.findByPk(channelId, {
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        include: [
+          { model: Episodes, as: "episodes" },
+          { model: Trailer, as: "trailers" },
+        ],
+      },
+    ],
   });
 
   if (!channel) {
     throw new CustomError.NotFoundError(`No channel with id ${channelId}`);
   }
 
-  const countVideos = videos.length;
+  const countVideos = channel.videos.length;
 
-  //Uncomment after permissions set
-  // checkPermissions(req.user, user.id);
-
-  res.status(StatusCodes.OK).json({ channel, videos, countVideos });
+  res.status(StatusCodes.OK).json({ channel, countVideos });
 };
 
 const getAllVideos = async (req, res) => {
@@ -754,6 +815,63 @@ const getAllVideos = async (req, res) => {
 
   const videosCount = videos.length;
   res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getSingleVideo = async (req, res) => {
+  const videoId = req.params.id;
+
+  const video = await Video.findByPk(videoId, {
+    include: [
+      { model: Episodes, as: "episodes" },
+      { model: Trailer, as: "trailers" },
+    ],
+  });
+
+  if (!video) {
+    throw new CustomError.NotFoundError(`No video with id ${videoId}`);
+  }
+
+  res.status(200).json({ video });
+};
+
+const deleteSingleVideo = async (req, res) => {
+  const videoId = req.params.id;
+
+  const video = await Video.findByPk(videoId);
+
+  if (!video) {
+    throw new CustomError.NotFoundError(`No video with id ${videoId}`);
+  }
+
+  await Episode.destroy({ where: { videoId } });
+  await Trailer.destroy({ where: { videoId } });
+  await ViewsStats.destroy({ where: { video_id: videoId } });
+  await Subscription.destroy({ where: { video_id: videoId } });
+  await Payment.destroy({ where: { video_id: videoId } });
+
+  await Video.destroy({ where: { id: videoId } });
+
+  res.status(200).json({ message: "Video deleted successfully" });
+};
+
+const changeVideoStatus = async (req, res) => {
+  const { id: videoIdToChange } = req.params;
+
+  const videoToChange = await Video.findByPk(videoIdToChange);
+
+  if (!videoToChange) {
+    throw new CustomError.NotFoundError(
+      `No Video found with id ${videoIdToChange}`
+    );
+  }
+
+  videoToChange.status =
+    videoToChange.status === "Active" ? "InActive" : "Active";
+  await videoToChange.save();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Status Changed", video: videoToChange });
 };
 
 const getAllCategories = async (req, res, next) => {
@@ -967,11 +1085,14 @@ module.exports = {
   getSingleUser,
   deleteUser,
   changeActiveStatus,
+  changeVideoStatus,
   editUserTable,
   UserExportCsv,
   addNewUser,
   addNewCoupon,
   getAllCoupons,
+  deleteCoupon,
+  changeCouponStatus,
   addCategory,
   addSubCategory,
   getAllCategories,
@@ -1000,4 +1121,6 @@ module.exports = {
   rejectContent,
   getAllContentCreatorCsv,
   acceptContent,
+  getSingleVideo,
+  deleteSingleVideo,
 };

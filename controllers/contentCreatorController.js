@@ -265,7 +265,7 @@ const getMyChannels = async (req, res) => {
 
   const channels = await Channel.findAll({
     where: { content_creator_id: contentCreatorId },
-    attributes: ["id", "name", "content_creator_id"],
+    attributes: ["id", "name", "content_creator_id", "createdAt"],
     include: [
       {
         model: Video,
@@ -354,6 +354,18 @@ const createNewChannel = async (req, res) => {
   if (!name || !content_creator_id) {
     throw new CustomError.BadRequestError(
       "Name and content_creator_id are required for creating a channel"
+    );
+  }
+
+  const existingChannel = await Channel.findOne({
+    where: {
+      name,
+    },
+  });
+
+  if (existingChannel) {
+    throw new CustomError.BadRequestError(
+      `Channel with name '${name}' already exists.`
     );
   }
 

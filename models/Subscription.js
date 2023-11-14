@@ -20,17 +20,17 @@ const Subscription = sequelize.define(
         key: "id",
       },
       onUpdate: "CASCADE",
-      onDelete: "SET NULL",
+      onDelete: "CASCADE",
     },
     video_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "video",
         key: "id",
       },
       onUpdate: "CASCADE",
-      onDelete: "SET NULL",
+      onDelete: "CASCADE",
     },
     paymentIntentId: {
       type: DataTypes.STRING,
@@ -105,6 +105,6 @@ Subscription.startCron = () => {
   });
 };
 
-// Subscription.sync();
+Subscription.sync();
 
 module.exports = Subscription;

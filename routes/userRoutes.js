@@ -66,8 +66,8 @@ router
   .get(authenticateUser, getMyFavorites)
   .delete(deleteFromFavorites);
 
-router.route("/rentedVideos").get(getRentedVideos);
-router.route("/purchasedVideos").get(getPurchasedVideos);
+router.route("/rentedVideos").get(authenticateUser, getRentedVideos);
+router.route("/purchasedVideos").get(authenticateUser, getPurchasedVideos);
 router.route("/checkVideoStatus").get(getVideoStatus);
 router.route("/allchannels").get(getAllChannelsQuery);
 router.route("/getSerie").get(PreviewSeries);
