@@ -580,8 +580,6 @@ const PreviewSeries = async (req, res) => {
   });
 };
 
-// Make sure to import necessary modules (CustomError, StatusCodes, models) in your actual code.
-
 const getRentedVideos = async (req, res) => {
   const userId = req.user.userId;
 
@@ -745,6 +743,7 @@ const getUniqueGenre = async (req, res) => {
 
   res.json({ categories });
 };
+
 module.exports = {
   AllChannels,
   createProfile,

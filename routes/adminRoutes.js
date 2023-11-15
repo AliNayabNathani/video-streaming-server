@@ -43,6 +43,10 @@ const {
   getSingleVideo,
   deleteSingleVideo,
   changeCouponStatus,
+  getAllActiveVideos,
+  getAllPendingVideos,
+  getAllactiveinactiveVideos,
+  getAnyVideoByStatus,
 } = require("../controllers/adminController");
 const {
   authorizePermission,
@@ -114,6 +118,20 @@ router.route("/content-approval").get(authenticateUser, GetContentApproval);
 //Get All Videos
 router.route("/videos").get(authenticateUser, getAllVideos);
 
+//Get All Active-Inactive Videos
+router
+  .route("/active-inactive-videos")
+  .get(authenticateUser, getAllactiveinactiveVideos);
+
+//Get All Active Videos
+router.route("/active-videos").get(authenticateUser, getAllActiveVideos);
+
+//Get All Pending Videos
+router.route("/pending-videos").get(authenticateUser, getAllPendingVideos);
+
+//Get Any Video By Status
+router.route("/any-videos").get(authenticateUser, getAnyVideoByStatus);
+
 //Get All Cat and Sub Cat
 router
   .route("/category-management")
@@ -132,7 +150,13 @@ router
     getAllCategoryAndSubCategoryCsv
   );
 
-//Get All Channels
+//reject content
+router.route("/content/:id/reject").post(authenticateUser, rejectContent);
+
+//accept
+router.route("/content/:id/accept").post(authenticateUser, acceptContent);
+
+//Get Single Channels
 router.route("/channel/:id").get(authenticateUser, getSingleChannel);
 
 //Get or Delete ContentCreator
@@ -167,11 +191,7 @@ router.route("/:id/active-channel").put(
 );
 
 //change video Status
-router.route("/:id/active-video").put(
-  // authenticateUser,
-  // authorizePermission("1", "3"),
-  changeVideoStatus
-);
+router.route("/:id/active-video").put(changeVideoStatus);
 
 //get singe video
 router.route("/video/:id").get(getSingleVideo).delete(deleteSingleVideo);
@@ -193,15 +213,7 @@ router
   .delete(authenticateUser, authorizePermission("1"), deleteCategory);
 
 //Edit Category info
-router
-  .route("/category/:id/edit")
-  .put(authenticateUser, authorizePermission("1"), editCategoryTable);
-
-//reject content
-router.route("/content/:id/reject").post(authenticateUser, rejectContent);
-
-//accept
-router.route("/content/:id/accept").post(authenticateUser, acceptContent);
+router.route("/category/:id/edit").put(authenticateUser, editCategoryTable);
 
 //change Channel status
 // router.route("/channel/:id/active").put(changeChannelActiveStatus);

@@ -31,11 +31,13 @@ const ContentApproval = sequelize.define(
 ContentApproval.belongsTo(User, {
   foreignKey: "user_id",
   as: "user",
+  onDelete: "CASCADE",
 });
 
 ContentApproval.belongsTo(Video, {
   foreignKey: "video_id",
   as: "video",
+  onDelete: "CASCADE",
 });
 
 module.exports = ContentApproval;

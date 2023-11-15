@@ -59,8 +59,14 @@ const Video = sequelize.define(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM("Active", "InActive", "Deleted", "Suspended"),
-      defaultValue: "Active",
+      type: DataTypes.ENUM(
+        "Active",
+        "InActive",
+        "Rejected",
+        "Pending",
+        "Deleted"
+      ),
+      defaultValue: "Pending",
     },
     category: {
       type: DataTypes.STRING,

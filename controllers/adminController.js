@@ -24,6 +24,7 @@ const Episode = require("../models/Episodes");
 const ViewsStats = require("../models/Stats");
 const Subscription = require("../models/Subscription");
 const Payment = require("../models/Payment");
+const { Op } = require("sequelize");
 
 const getAllUsers = async (req, res) => {
   const users = await User.findAll({
@@ -686,7 +687,7 @@ const changeChannelActiveStatus = async (req, res) => {
 const getAllChannels = async (req, res) => {
   const channels = await Channel.findAll({
     raw: true,
-    attributes: ["id", "name", "content_creator_id", "createdAt"],
+    attributes: ["id", "name", "content_creator_id", "createdAt", "status"],
   });
 
   if (!channels || channels.length === 0) {
@@ -704,16 +705,6 @@ const getAllChannels = async (req, res) => {
     map[creator.id] = creator.name;
     return map;
   }, {});
-
-  // const channelVideos = await Video.findAll({
-  //   where: { id: creatorIds },
-  //   attributes: ["id", "name"],
-  // });
-
-  // const creatorMap = contentCreators.reduce((map, creator) => {
-  //   map[creator.id] = creator.name;
-  //   return map;
-  // }, {});
 
   channels.forEach((channel) => {
     channel.creator_name = creatorMap[channel.content_creator_id];
@@ -764,9 +755,7 @@ const getAllVideos = async (req, res) => {
   });
 
   if (!videos || videos.length === 0) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ error: `No Videos found!!` });
+    throw new CustomError.NotFoundError(`No Videos Found!`);
   }
 
   const videoIds = videos.map((video) => video.id);
@@ -784,6 +773,307 @@ const getAllVideos = async (req, res) => {
   videos.forEach((video) => {
     video.status = videoStatusMap[video.id] || "Pending";
   });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getAllactiveinactiveVideos = async (req, res) => {
+  const videos = await Video.findAll({
+    raw: true,
+    where: {
+      status: {
+        [Op.in]: ["Active", "InActive"],
+      },
+    },
+    attributes: [
+      "id",
+      "name",
+      "views",
+      "rented_amount",
+      "purchasing_amount",
+      "views",
+      "status",
+      "createdAt",
+      "channelId",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    throw new CustomError.NotFoundError(`No Active or InActive Videos found!!`);
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  const contentApprovals = await ContentApproval.findAll({
+    where: { video_id: videoIds },
+    raw: true,
+  });
+
+  const videoStatusMap = {};
+  contentApprovals.forEach((approval) => {
+    videoStatusMap[approval.video_id] = approval.status;
+  });
+
+  videos.forEach((video) => {
+    video.status = videoStatusMap[video.id] || "Pending";
+  });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getAllActiveVideos = async (req, res) => {
+  const videos = await Video.findAll({
+    raw: true,
+    where: {
+      status: "Active",
+    },
+    attributes: [
+      "id",
+      "name",
+      "views",
+      "rented_amount",
+      "purchasing_amount",
+      "views",
+      "createdAt",
+      "channelId",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    throw new CustomError.NotFoundError(`No Active Videos Found!`);
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  const contentApprovals = await ContentApproval.findAll({
+    where: { video_id: videoIds },
+    raw: true,
+  });
+
+  const videoStatusMap = {};
+  contentApprovals.forEach((approval) => {
+    videoStatusMap[approval.video_id] = approval.status;
+  });
+
+  videos.forEach((video) => {
+    video.status = videoStatusMap[video.id] || "Pending";
+  });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getAllPendingVideos = async (req, res) => {
+  const videos = await Video.findAll({
+    raw: true,
+    where: {
+      status: "Pending",
+    },
+    attributes: [
+      "id",
+      "name",
+      "views",
+      "rented_amount",
+      "purchasing_amount",
+      "views",
+      "createdAt",
+      "channelId",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    throw new CustomError.NotFoundError(`No Pending Videos Found!`);
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  const contentApprovals = await ContentApproval.findAll({
+    where: { video_id: videoIds },
+    raw: true,
+  });
+
+  const videoStatusMap = {};
+  contentApprovals.forEach((approval) => {
+    videoStatusMap[approval.video_id] = approval.status;
+  });
+
+  videos.forEach((video) => {
+    video.status = videoStatusMap[video.id] || "Pending";
+  });
+
+  const channelIds = videos.map((video) => video.channelId);
+
+  const channels = await Channel.findAll({
+    where: { id: channelIds },
+    raw: true,
+    attributes: ["id", "content_creator_id"],
+  });
+
+  const creatorIds = channels.map((channel) => channel.content_creator_id);
+
+  const contentCreators = await ContentCreator.findAll({
+    where: { id: creatorIds },
+    raw: true,
+    attributes: ["id", "name"],
+  });
+
+  const creatorMap = contentCreators.reduce((map, creator) => {
+    map[creator.id] = creator.name;
+    return map;
+  }, {});
+
+  videos.forEach((video) => {
+    const channel = channels.find((channel) => channel.id === video.channelId);
+    if (channel) {
+      video.creator_name = creatorMap[channel.content_creator_id];
+    }
+  });
+
+  const videosCount = videos.length;
+  res.status(StatusCodes.OK).json({ videos, videosCount });
+};
+
+const getAnyVideoByStatus = async (req, res) => {
+  let whereClause = {};
+
+  if (req.query.status) {
+    const statusValues = Array.isArray(req.query.status)
+      ? req.query.status
+      : [req.query.status];
+
+    const allowedStatusValues = ["Active", "InActive", "Pending"];
+    const isValidStatus = statusValues.every((status) =>
+      allowedStatusValues.includes(status)
+    );
+
+    if (isValidStatus) {
+      whereClause = { status: { [Op.in]: statusValues } };
+    } else {
+      throw new CustomError.BadRequestError(`Invalid status value(s)`);
+    }
+  }
+
+  const videos = await Video.findAll({
+    raw: true,
+    where: whereClause,
+    attributes: [
+      "id",
+      "name",
+      "views",
+      "rented_amount",
+      "purchasing_amount",
+      "views",
+      "createdAt",
+      "channelId",
+      "status",
+    ],
+  });
+
+  if (!videos || videos.length === 0) {
+    throw new CustomError.NotFoundError(`No Videos Found!`);
+  }
+
+  const videoIds = videos.map((video) => video.id);
+
+  // const contentApprovals = await ContentApproval.findAll({
+  //   where: { video_id: videoIds },
+  //   raw: true,
+  // });
+
+  // const videoStatusMap = {};
+  // contentApprovals.forEach((approval) => {
+  //   videoStatusMap[approval.video_id] = approval.status;
+  // });
+
+  // videos.forEach((video) => {
+  //   video.status = videoStatusMap[video.id] || "Pending";
+  // });
 
   const channelIds = videos.map((video) => video.channelId);
 
@@ -848,17 +1138,65 @@ const deleteSingleVideo = async (req, res) => {
   await ViewsStats.destroy({ where: { video_id: videoId } });
   await Subscription.destroy({ where: { video_id: videoId } });
   await Payment.destroy({ where: { video_id: videoId } });
-
+  await ContentApproval.destroy({ where: { video_id: videoId } });
   await Video.destroy({ where: { id: videoId } });
 
   res.status(200).json({ message: "Video deleted successfully" });
 };
 
+const rejectContent = async (req, res) => {
+  const contentId = req.params.id;
+  const userId = req.user.userId;
+
+  const content = await Video.findByPk(contentId);
+
+  if (!content) {
+    throw new CustomError.NotFoundError("Content Not Found!!");
+  }
+  await content.update({ status: "Rejected" });
+  const contentapproval = await ContentApproval.create({
+    user_id: userId,
+    video_id: contentId,
+    status: "Reject",
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ contentapproval, msg: "Content Rejected!!" });
+};
+
+const acceptContent = async (req, res) => {
+  const contentId = req.params.id;
+  // console.log("CONTENT", contentId);
+  const userId = req.user;
+  // console.log("Me user: ", userId);
+  const content = await Video.findOne({
+    where: { id: contentId },
+  });
+  console.log("CONTENT BEFORE", content);
+
+  if (!content) {
+    throw new CustomError.NotFoundError("Content Not Found!!");
+  }
+  await content.update({ status: "Active" });
+  console.log("CONTENT AFTER", content);
+  const contentapproval = await ContentApproval.create({
+    user_id: userId.userId,
+    video_id: contentId,
+    status: "Accept",
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ contentapproval, msg: "Content Accepted!!" });
+};
+
 const changeVideoStatus = async (req, res) => {
   const { id: videoIdToChange } = req.params;
+  // console.log("videoId", videoIdToChange);
 
   const videoToChange = await Video.findByPk(videoIdToChange);
-
+  // console.log("VIDEO TO CHANGE", videoToChange);
   if (!videoToChange) {
     throw new CustomError.NotFoundError(
       `No Video found with id ${videoIdToChange}`
@@ -867,6 +1205,7 @@ const changeVideoStatus = async (req, res) => {
 
   videoToChange.status =
     videoToChange.status === "Active" ? "InActive" : "Active";
+
   await videoToChange.save();
 
   res
@@ -1031,55 +1370,6 @@ const GetContentApproval = async (req, res, next) => {
   res.status(StatusCodes.OK).json({ videos, videosCount });
 };
 
-const rejectContent = async (req, res) => {
-  const contentId = req.params.id;
-  // const user_admin = req.user;
-
-  const content = await Video.findByPk(contentId);
-
-  if (!content) {
-    throw new CustomError.NotFoundError("Content Not Found!!");
-  }
-
-  // checkPermissions(user_admin, content.user_id);
-
-  const contentapproval = await ContentApproval.create({
-    user_id: 1,
-    video_id: contentId,
-    status: "Reject",
-  });
-
-  res
-    .status(StatusCodes.OK)
-    .json({ contentapproval, msg: "Content Rejected!!" });
-};
-
-const acceptContent = async (req, res) => {
-  const contentId = req.params.id;
-  // const user_admin = req.user;
-
-  const content = await Video.findOne({
-    where: { id: contentId },
-  });
-  console.log("here", content);
-
-  if (!content) {
-    throw new CustomError.NotFoundError("Content Not Found!!");
-  }
-
-  // checkPermissions(user_admin, content.user_id);
-
-  const contentapproval = await ContentApproval.create({
-    user_id: 1,
-    video_id: contentId,
-    status: "Accept",
-  });
-
-  res
-    .status(StatusCodes.OK)
-    .json({ contentapproval, msg: "Content Accepted!!" });
-};
-
 module.exports = {
   getAllUsers,
   getSingleUser,
@@ -1115,6 +1405,10 @@ module.exports = {
   getAllChannels,
   getSingleChannel,
   getAllVideos,
+  getAllActiveVideos,
+  getAllPendingVideos,
+  getAnyVideoByStatus,
+  getAllactiveinactiveVideos,
   getAllCategoryAndSubCategory,
   getAllCategoryAndSubCategoryCsv,
   GetContentApproval,
