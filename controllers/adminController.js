@@ -308,6 +308,7 @@ const getAllContentCreator = async (req, res) => {
         subscribers: creator.subscribers,
         status: creator.status,
         gender: genderValue,
+        createdAt: creator.createdAt,
       };
     })
   );
