@@ -93,6 +93,7 @@ router.route("/add-sub-category").post(authenticateUser, addSubCategory);
 
 //Content Management Module
 router.route("/get-all-content").get(authenticateUser, getAllContent);
+
 router
   .route("/terms-and-conditions")
   .put(authenticateUser, authorizePermission("1"), updateTermsAndConditions);

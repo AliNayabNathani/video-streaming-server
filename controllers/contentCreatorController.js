@@ -15,6 +15,12 @@ const { Op } = require("sequelize");
 const sequelize = require("../config/sequelize");
 const { uploadVideo, uploadVideoPoster } = require("./otherController");
 const recordView = require("../utils/recordViews");
+const ContentManagement = require("../models/ContentManagement");
+const FAQ = require("../models/FAQs");
+const FaqAccount = require("../models/FaqAccounts");
+const FaqTax = require("../models/FaqTax");
+const Overview = require("../models/Overview");
+const ContactUs = require("../models/ContactUs");
 
 const MyVideos = async (req, res) => {
   const userId = req.user.userId;
@@ -491,25 +497,109 @@ const getSupport = async (req, res) => {
 };
 
 const updateSupport = async (req, res) => {
-  const { supportData } = req.body;
+  const updatedDescription = req.body.updatedDescription;
 
-  if (!supportData) {
-    throw new CustomError.BadRequestError("Support data is required.");
-  }
-
-  const supportItem = await Support.findOne({
+  const [overviewItem, created] = await Support.findOrCreate({
     where: { name: "Support" },
+    defaults: { description: updatedDescription },
   });
 
-  if (!supportItem) {
-    throw new CustomError.NotFoundError("Support item not found.");
+  if (!overviewItem) {
+    throw new CustomError.NotFoundError("Support Not Found");
   }
-  supportItem.description = supportData;
-  await supportItem.save();
+
+  if (!created) {
+    overviewItem.description = updatedDescription;
+    await overviewItem.save();
+  }
 
   res
     .status(StatusCodes.OK)
-    .json({ message: "Support data updated successfully." });
+    .json({ message: "Support Data updated successfully." });
+};
+
+const updateOverview = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const [overviewItem, created] = await Overview.findOrCreate({
+    where: { name: "Overview" },
+    defaults: { description: updatedDescription },
+  });
+
+  if (!overviewItem) {
+    throw new CustomError.NotFoundError("Overview Not Found");
+  }
+
+  if (!created) {
+    overviewItem.description = updatedDescription;
+    await overviewItem.save();
+  }
+
+  res.status(StatusCodes.OK).json({ msg: "Overview Updated Successfully" });
+};
+
+const getOverview = async (req, res) => {
+  const overviewItem = await Overview.findOne({
+    where: { name: "Overview" },
+  });
+  const overView = overviewItem.description;
+
+  res.status(StatusCodes.OK).json({ overView });
+};
+
+const updateContentPolicy = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const [contentPolicyItem, created] = await ContentManagement.findOrCreate({
+    where: { name: "Content Policy" },
+    defaults: { description: updatedDescription },
+  });
+
+  if (!contentPolicyItem) {
+    throw new CustomError.NotFoundError("Overview Not Found");
+  }
+
+  if (!created) {
+    contentPolicyItem.description = updatedDescription;
+    await overviewItem.save();
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Content Policy Updated Successfully" });
+};
+
+const getContentPolicy = async (req, res) => {
+  const contentPolicyItem = await ContentManagement.findOne({
+    where: { name: "Content Policy" },
+  });
+
+  const contentPolicy = contentPolicyItem.description;
+
+  res.status(StatusCodes.OK).json({ contentPolicy });
+};
+
+const updateCopyright = async (req, res) => {
+  const updatedDescription = req.body.updatedDescription;
+
+  const [copyrightAndTrademarkItem, created] =
+    await ContentManagement.findOrCreate({
+      where: { name: "Copyright And Trademark" },
+      defaults: { description: updatedDescription },
+    });
+
+  if (!copyrightAndTrademarkItem) {
+    throw new CustomError.NotFoundError("Copyright And Trademark Not Found");
+  }
+
+  if (!created) {
+    copyrightAndTrademarkItem.description = updatedDescription;
+    await copyrightAndTrademarkItem.save();
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: "Copyright And Trademark Updated Successfully" });
 };
 
 const getSingleEpisode = async (req, res) => {
@@ -540,25 +630,210 @@ const getSingleTrailer = async (req, res) => {
   res.status(StatusCodes.OK).json({ trailer });
 };
 
-const setUpPayee = async (req, res) => {
-  const { country } = req.body;
+const updateFAQ = async (req, res) => {
+  const faqUpdates = req.body;
 
-  res.status(StatusCodes.OK);
+  if (!Array.isArray(faqUpdates)) {
+    throw new CustomError.BadRequestError("Invalid request body format");
+  }
+
+  const updatePromises = faqUpdates.map(async (update) => {
+    const { questions, answers } = update;
+
+    const [faqItem, created] = await FAQ.findOrCreate({
+      where: { questions: questions },
+      defaults: { answers: answers },
+    });
+
+    if (!faqItem) {
+      throw new CustomError.NotFoundError(
+        `FAQ for Submissions question "${questions}" not found`
+      );
+    }
+
+    if (!created) {
+      // FAQ already exists, update the answers (DONT REMOVE MY COMMENTS :@)
+      faqItem.answers = answers;
+      await faqItem.save();
+    }
+  });
+
+  try {
+    await Promise.all(updatePromises);
+    res.status(StatusCodes.OK).json({ msg: "FAQs Updated Successfully" });
+  } catch (error) {
+    console.error("Error updating FAQs:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
 };
 
-const companyProfileAccount = async (req, res) => {
-  const {
-    country,
-    company_name,
-    company_email,
-    postal_code,
-    phone_number,
-    city,
-    address_line1,
-    state_province,
-  } = req.body;
+const getFAQ = async (req, res) => {
+  const allFAQ = await FAQ.findAll();
 
-  res.status(StatusCodes.OK);
+  if (!allFAQ || allFAQ.length === 0) {
+    throw new NotFoundError("No FAQs for Submissions found");
+  }
+
+  const faqData = allFAQ.map((faq) => ({
+    questions: faq.questions,
+    answers: faq.answers,
+  }));
+
+  res.status(StatusCodes.OK).json({ faq: faqData });
+};
+
+const updateFAQAccount = async (req, res) => {
+  const faqUpdates = req.body;
+
+  if (!Array.isArray(faqUpdates)) {
+    throw new CustomError.BadRequestError("Invalid request body format");
+  }
+
+  const updatePromises = faqUpdates.map(async (update) => {
+    const { questions, answers } = update;
+
+    const [faqItem, created] = await FaqAccount.findOrCreate({
+      where: { questions: questions },
+      defaults: { answers: answers },
+    });
+
+    if (!faqItem) {
+      throw new CustomError.NotFoundError(
+        `FAQ for Account question "${questions}" not found`
+      );
+    }
+
+    if (!created) {
+      // FAQ already exists, update the answers (DONT REMOVE MY COMMENTS :@)
+      faqItem.answers = answers;
+      await faqItem.save();
+    }
+  });
+
+  try {
+    await Promise.all(updatePromises);
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: "FAQs Account Updated Successfully" });
+  } catch (error) {
+    console.error("Error updating FAQs:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+};
+
+const getFAQAccount = async (req, res) => {
+  const allFAQ = await FaqAccount.findAll();
+
+  if (!allFAQ || allFAQ.length === 0) {
+    throw new NotFoundError("No FAQs for Account found");
+  }
+
+  const faqData = allFAQ.map((faq) => ({
+    questions: faq.questions,
+    answers: faq.answers,
+  }));
+
+  res.status(StatusCodes.OK).json({ FaqAccounts: faqData });
+};
+
+const updateFAQTax = async (req, res) => {
+  const faqUpdates = req.body;
+
+  if (!Array.isArray(faqUpdates)) {
+    throw new CustomError.BadRequestError("Invalid request body format");
+  }
+
+  const updatePromises = faqUpdates.map(async (update) => {
+    const { questions, answers } = update;
+
+    const [faqItem, created] = await FaqTax.findOrCreate({
+      where: { questions: questions },
+      defaults: { answers: answers },
+    });
+
+    if (!faqItem) {
+      throw new CustomError.NotFoundError(
+        `FAQ for Tax question "${questions}" not found`
+      );
+    }
+
+    if (!created) {
+      // FAQ already exists, update the answers (DONT REMOVE MY COMMENTS :@)
+      faqItem.answers = answers;
+      await faqItem.save();
+    }
+  });
+
+  try {
+    await Promise.all(updatePromises);
+    res.status(StatusCodes.OK).json({ msg: "FAQs Updated Successfully" });
+  } catch (error) {
+    console.error("Error updating FAQs:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+};
+
+const getFaqTax = async (req, res) => {
+  const allFAQ = await FaqTax.findAll();
+
+  if (!allFAQ || allFAQ.length === 0) {
+    throw new NotFoundError("No FAQs for Tax found");
+  }
+
+  const faqData = allFAQ.map((faq) => ({
+    questions: faq.questions,
+    answers: faq.answers,
+  }));
+
+  res.status(StatusCodes.OK).json({ FaqTax: faqData });
+};
+
+const updateContactUs = async (req, res) => {
+  const { description, mobile_number, fax, email, address } = req.body;
+
+  const [contactUsItem, created] = await ContactUs.findOrCreate({
+    where: { id: 1 },
+    defaults: {
+      description,
+      mobile_number,
+      fax,
+      email,
+      address,
+    },
+  });
+
+  if (!contactUsItem || (created && !contactUsItem)) {
+    throw new CustomError.NotFoundError("ContactUs Not Found");
+  }
+
+  if (!created) {
+    contactUsItem.description = description;
+    contactUsItem.mobile_number = mobile_number;
+    contactUsItem.fax = fax;
+    contactUsItem.email = email;
+    contactUsItem.address = address;
+    await contactUsItem.save();
+  }
+
+  res.status(StatusCodes.OK).json({ msg: "ContactUs Updated Successfully" });
+};
+
+const getContactUs = async (req, res) => {
+  const contactUsItem = await ContactUs.findOne({
+    where: { id: 1 },
+  });
+
+  if (!contactUsItem) {
+    throw new CustomError.NotFoundError("ContactUs Not Found");
+  }
+
+  res.status(StatusCodes.OK).json({ contactUsItem });
 };
 
 module.exports = {
@@ -579,4 +854,17 @@ module.exports = {
   createNewChannelWithEpisodes,
   getSingleEpisode,
   getSingleTrailer,
+  getOverview,
+  updateOverview,
+  getContentPolicy,
+  updateContentPolicy,
+  updateCopyright,
+  updateFAQ,
+  getFAQ,
+  updateFAQAccount,
+  getFAQAccount,
+  updateFAQTax,
+  getFaqTax,
+  updateContactUs,
+  getContactUs,
 };

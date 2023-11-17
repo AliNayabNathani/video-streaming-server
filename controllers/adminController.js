@@ -535,14 +535,23 @@ const getAllContent = async (req, res) => {
   const aboutUsItem = await ContentManagement.findOne({
     where: { name: "About Us" },
   });
+  const copyrightAndTrademarkItem = await ContentManagement.findOne({
+    where: { name: "Copyright And Trademark" },
+  });
 
+  const copyrightAndTrademark = copyrightAndTrademarkItem.description;
   const termsAndConditions = termsAndConditionsItem.description;
   const aboutUs = aboutUsItem.description;
   const privacyPolicy = privacyPolicyItem.description;
 
   res
     .status(StatusCodes.OK)
-    .json({ termsAndConditions, privacyPolicy, aboutUs });
+    .json({
+      termsAndConditions,
+      privacyPolicy,
+      aboutUs,
+      copyrightAndTrademark,
+    });
 };
 
 const getSubCategory = async (req, res) => {

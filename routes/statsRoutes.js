@@ -18,6 +18,7 @@ router
 router
   .route("/getcreatorsbymonth")
   .get(authenticateUser, getCreatorsRegisteredByMonth);
+
 router.route("/getvideos").get(authenticateUser, getTotalVideos);
 
 //client graphs

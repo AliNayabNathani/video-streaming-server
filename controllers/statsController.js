@@ -179,6 +179,7 @@ const getTotalVideos = async (req, res) => {
       createdAt: {
         [Op.between]: [currentMonthStartDate, currentMonthEndDate],
       },
+      status: "Active",
     },
   });
 
