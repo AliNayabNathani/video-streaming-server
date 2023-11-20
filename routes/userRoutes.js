@@ -19,7 +19,7 @@ const {
   sendTestMailToUser,
   //   getAllChannelsAndSeries,
   //   getAllChannelsAndMovies,
-  //   getAllChannelsAndAll,
+  getAllChannelsAndAll,
   getAllChannelsQuery,
   addToFavorites,
   PreviewSeries,
@@ -59,7 +59,7 @@ router.route("/sendTestMailToUser").post(authenticateUser, sendTestMailToUser);
 
 // router.route("/getAllTvShows").get(getAllChannelsAndSeries);
 // router.route("/getAllMovies").get(getAllChannelsAndMovies);
-// router.route("/get-all-channels-videos").get(getAllChannelsAndAll);
+router.route("/get-all-channels-videos").get(getAllChannelsAndAll);
 router
   .route("/favourites")
   .post(addToFavorites)

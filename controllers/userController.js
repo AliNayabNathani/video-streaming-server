@@ -384,38 +384,38 @@ const sendTestMailToUser = async (req, res) => {
 //     .json({ channels: channelsWithMovies, channelCount });
 // };
 
-// const getAllChannelsAndAll = async (req, res) => {
-//   const channelsWithAll = await Channel.findAll({
-//     attributes: ["id", "name", "content_creator_id"],
-//     include: [
-//       {
-//         model: Video,
-//         as: "videos",
-//         attributes: ["id", "name", "views", "Type"],
-//         include: [
-//           {
-//             model: Trailer,
-//             as: "trailers",
-//             attributes: ["id", "poster", "file", "title"],
-//           },
-//           {
-//             model: Episode,
-//             as: "episodes",
-//             attributes: ["id", "poster", "file", "title", "description"],
-//           },
-//         ],
-//       },
-//     ],
-//   });
+const getAllChannelsAndAll = async (req, res) => {
+  const channelsWithAll = await Channel.findAll({
+    attributes: ["id", "name", "content_creator_id"],
+    include: [
+      {
+        model: Video,
+        as: "videos",
+        attributes: ["id", "name", "views", "Type"],
+        include: [
+          {
+            model: Trailer,
+            as: "trailers",
+            attributes: ["id", "poster", "file", "title"],
+          },
+          {
+            model: Episode,
+            as: "episodes",
+            attributes: ["id", "poster", "file", "title", "description"],
+          },
+        ],
+      },
+    ],
+  });
 
-//   if (!channelsWithAll || channelsWithAll.length === 0) {
-//     throw new CustomError.NotFoundError(`No channels with Movies found.`);
-//   }
+  if (!channelsWithAll || channelsWithAll.length === 0) {
+    throw new CustomError.NotFoundError(`No channels with Movies found.`);
+  }
 
-//   const channelCount = channelsWithAll.length;
+  const channelCount = channelsWithAll.length;
 
-//   res.status(StatusCodes.OK).json({ channels: channelsWithAll, channelCount });
-// };
+  res.status(StatusCodes.OK).json({ channels: channelsWithAll, channelCount });
+};
 
 const getAllChannelsQuery = async (req, res) => {
   const { videoType, genre } = req.query;
@@ -765,4 +765,5 @@ module.exports = {
   getPurchasedVideos,
   getVideoStatus,
   getUniqueGenre,
+  getAllChannelsAndAll,
 };

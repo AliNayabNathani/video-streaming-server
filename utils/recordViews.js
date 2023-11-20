@@ -3,7 +3,12 @@ const Video = require("../models/Video");
 const Episode = require("../models/Episodes");
 const Trailer = require("../models/Trailer");
 
-const recordView = async (userId, videoId, trailerId, episodeId) => {
+const recordView = async (
+  userId,
+  videoId,
+  trailerId = null,
+  episodeId = null
+) => {
   console.log("trailer  id", trailerId, "video id", videoId);
 
   await ViewsStats.create({

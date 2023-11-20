@@ -31,18 +31,18 @@ const ViewsStats = sequelize.define(
     },
     episode_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
       references: {
         model: "episode",
         key: "id",
-        onDelete: "CASCADE", // ON DELETE CASCADE
-        onUpdate: "CASCADE", // ON UPDATE CASCADE
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
     },
     trailer_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
       references: {
         model: "trailer",

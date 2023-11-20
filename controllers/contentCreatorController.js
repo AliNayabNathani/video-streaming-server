@@ -609,7 +609,7 @@ const getSingleEpisode = async (req, res) => {
   if (!episode) {
     throw new CustomError.NotFoundError(`No Episode with id: ${episodeId}`);
   }
-  const trailerId = 0;
+  const trailerId = null;
   await recordView(req.user.userId, episode.videoId, trailerId, episode.id);
 
   res.status(StatusCodes.OK).json({ episode });
