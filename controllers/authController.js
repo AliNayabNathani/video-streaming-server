@@ -43,7 +43,7 @@ const login = async (req, res) => {
   });
 
   if (!user) {
-    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+    throw new CustomError.UnauthenticatedError("User Doesnot Exist!");
   }
 
   const isPasswordCorrect = await user.comparePassword(password);
@@ -71,11 +71,11 @@ const adminLogin = async (req, res) => {
   });
 
   if (!user) {
-    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+    throw new CustomError.UnauthenticatedError("User Doesnot Exist!");
   }
 
   // Check if the user has the required role (Admin with roleId = 1)
-  if (user.role_id !== 1) {
+  if (user.role_id !== "1") {
     throw new CustomError.UnauthorizedError(
       "You do not have the required permissions to log in"
     );
@@ -110,7 +110,7 @@ const contentCreatorLogin = async (req, res) => {
   }
 
   // Check if the user has the required role (Admin with roleId = 1)
-  if (user.role_id !== 4) {
+  if (user.role_id !== "4") {
     throw new CustomError.UnauthorizedError(
       "You do not have the required permissions to log in"
     );
@@ -145,7 +145,7 @@ const userLogin = async (req, res) => {
   }
 
   // Check if the user has the required role (User with roleId = 2)
-  if (user.role_id !== 2) {
+  if (user.role_id !== "2") {
     throw new CustomError.UnauthorizedError(
       "You do not have the required permissions to log in"
     );
