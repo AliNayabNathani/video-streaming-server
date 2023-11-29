@@ -231,6 +231,9 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
   login,
+  adminLogin,
+  contentCreatorLogin,
+  userLogin,
   register,
   updatePassword,
   updateProfile,

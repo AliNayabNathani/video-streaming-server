@@ -6,14 +6,27 @@ const {
   updatePassword,
   updateProfile,
   logout,
+  adminLogin,
+  userLogin,
+  contentCreatorLogin,
 } = require("../controllers/authController");
-const { authorizePermission, authenticateUser } = require("../middleware/authentication");
+const {
+  authorizePermission,
+  authenticateUser,
+} = require("../middleware/authentication");
 
 //To Register a new User
 router.route("/register").post(register);
 
 //Login
 router.route("/login").post(login);
+
+//Admin Login
+router.route("/login/admin").post(adminLogin);
+//user login
+router.route("/login/user").post(userLogin);
+//creatorlogin
+router.route("/login/creator").post(contentCreatorLogin);
 
 //To logout User
 router.route("/logout").get(logout);
