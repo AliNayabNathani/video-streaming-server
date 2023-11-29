@@ -130,5 +130,5 @@ User.prototype.comparePassword = async function (candidatePassword) {
 //   }
 // }
 // updateUserRole();
-console.log("HERE ", User === sequelize.models.User);
+// console.log("HERE ", User === sequelize.models.User);
 module.exports = User;

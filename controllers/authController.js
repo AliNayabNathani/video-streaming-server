@@ -58,6 +58,111 @@ const login = async (req, res) => {
   res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
 };
 
+const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new CustomError.BadRequestError("Please provide email and password");
+  }
+
+  const user = await User.findOne({
+    where: { email },
+    attributes: ["id", "name", "password", "email", "role_id"],
+  });
+
+  if (!user) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  // Check if the user has the required role (Admin with roleId = 1)
+  if (user.role_id !== 1) {
+    throw new CustomError.UnauthorizedError(
+      "You do not have the required permissions to log in"
+    );
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+};
+
+const contentCreatorLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new CustomError.BadRequestError("Please provide email and password");
+  }
+
+  const user = await User.findOne({
+    where: { email },
+    attributes: ["id", "name", "password", "email", "role_id"],
+  });
+
+  if (!user) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  // Check if the user has the required role (Admin with roleId = 1)
+  if (user.role_id !== 4) {
+    throw new CustomError.UnauthorizedError(
+      "You do not have the required permissions to log in"
+    );
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+};
+
+const userLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new CustomError.BadRequestError("Please provide email and password");
+  }
+
+  const user = await User.findOne({
+    where: { email },
+    attributes: ["id", "name", "password", "email", "role_id"],
+  });
+
+  if (!user) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  // Check if the user has the required role (User with roleId = 2)
+  if (user.role_id !== 2) {
+    throw new CustomError.UnauthorizedError(
+      "You do not have the required permissions to log in"
+    );
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError("Invalid Credentials");
+  }
+
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, msg: "Logged In" });
+};
+
 const logout = async (req, res) => {
   res.cookie("token", "logout", {
     httpOnly: true,
